@@ -54,7 +54,7 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         <div className="user-profile-container">
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
           <div className="user-details">
             <span className="user-name">My Account</span>
           </div>
