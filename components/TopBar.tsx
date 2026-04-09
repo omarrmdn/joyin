@@ -1,9 +1,12 @@
 "use client";
 
-import { Search, Bell, Menu } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { Search, Bell, LogIn } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import Image from "next/image";
 
 export function TopBar() {
+  const { user, signInWithGoogle } = useAuth();
+
   return (
     <div className="top-bar glass">
       <div className="mobile-logo">
@@ -17,7 +20,36 @@ export function TopBar() {
         <button className="control-btn">
           <Bell size={22} />
         </button>
-        <UserButton />
+        {user ? (
+          user.user_metadata?.avatar_url ? (
+            <Image
+              src={user.user_metadata.avatar_url}
+              alt="Profile"
+              width={28}
+              height={28}
+              style={{ borderRadius: "50%", border: "2px solid var(--border)" }}
+            />
+          ) : (
+            <div style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: "var(--primary)",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+            }}>
+              {(user.email?.[0] || "U").toUpperCase()}
+            </div>
+          )
+        ) : (
+          <button className="control-btn" onClick={() => signInWithGoogle()}>
+            <LogIn size={22} />
+          </button>
+        )}
       </div>
 
       <style jsx>{`

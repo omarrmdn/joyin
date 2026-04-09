@@ -11,9 +11,11 @@ import {
   User, 
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  LogIn
 } from "lucide-react";
-import { UserButton, useClerk } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth-context";
+import Image from "next/image";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
@@ -27,7 +29,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { signOut } = useClerk();
+  const { user, signInWithGoogle, signOut } = useAuth();
 
   return (
     <div className="sidebar">
@@ -53,22 +55,45 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="user-profile-container">
-          <UserButton />
-          <div className="user-details">
-            <span className="user-name">My Account</span>
-          </div>
-        </div>
-        
-        <Link href="/settings" className={`nav-item ${pathname === '/settings' ? 'active' : ''}`}>
-          <Settings size={24} className="nav-item-icon" />
-          <span className="nav-label">Settings</span>
-        </Link>
-        
-        <button onClick={() => signOut()} className="nav-item logout-btn">
-          <LogOut size={24} className="nav-item-icon" />
-          <span className="nav-label">Logout</span>
-        </button>
+        {user ? (
+          <>
+            <div className="user-profile-container">
+              {user.user_metadata?.avatar_url ? (
+                <Image
+                  src={user.user_metadata.avatar_url}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="user-avatar"
+                />
+              ) : (
+                <div className="user-avatar-fallback">
+                  <User size={18} />
+                </div>
+              )}
+              <div className="user-details">
+                <span className="user-name">
+                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "My Account"}
+                </span>
+              </div>
+            </div>
+            
+            <Link href="/settings" className={`nav-item ${pathname === '/settings' ? 'active' : ''}`}>
+              <Settings size={24} className="nav-item-icon" />
+              <span className="nav-label">Settings</span>
+            </Link>
+            
+            <button onClick={() => signOut()} className="nav-item logout-btn">
+              <LogOut size={24} className="nav-item-icon" />
+              <span className="nav-label">Logout</span>
+            </button>
+          </>
+        ) : (
+          <button onClick={() => signInWithGoogle()} className="nav-item google-signin-btn">
+            <LogIn size={24} className="nav-item-icon" />
+            <span className="nav-label">Sign In</span>
+          </button>
+        )}
       </div>
 
       <style jsx global>{`
@@ -95,6 +120,26 @@ export function Sidebar() {
           margin-bottom: 0.5rem;
         }
 
+        .user-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid var(--border);
+        }
+
+        .user-avatar-fallback {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: var(--primary-transparent);
+          color: var(--primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--border);
+        }
+
         .user-name {
           font-size: 0.9rem;
           font-weight: 600;
@@ -108,6 +153,17 @@ export function Sidebar() {
 
         .logout-btn:hover {
           background-color: rgba(255, 68, 68, 0.1) !important;
+        }
+
+        .google-signin-btn {
+          width: 100%;
+          text-align: left;
+          color: var(--primary) !important;
+          font-weight: 600;
+        }
+
+        .google-signin-btn:hover {
+          background-color: var(--primary-transparent) !important;
         }
 
         @media (max-width: 768px) {
