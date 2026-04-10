@@ -23,5 +23,5 @@ export const closeShareModal = () => {
 export const subscribeShareModal = (listener: Listener) => {
   listeners.add(listener);
   listener(state);
-  return () => listeners.delete(listener);
+  return () => { listeners.delete(listener); };
 };
