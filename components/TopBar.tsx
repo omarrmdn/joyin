@@ -1,100 +1,81 @@
 "use client";
 
-import { Search, Bell, LogIn } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useNotifications } from "@/hooks/useNotifications";
+import { IoNotificationsOutline, IoLogInOutline, IoLocationOutline, IoSearchOutline } from "react-icons/io5";
 import Image from "next/image";
+import Link from "next/link";
+import TopbarLogo from "./TopbarLogo";
 
 export function TopBar() {
   const { user, signInWithGoogle } = useAuth();
+  const { unreadCount } = useNotifications();
 
   return (
-    <div className="top-bar glass">
-      <div className="mobile-logo">
-        <h1 className="logo-text-small">JOI<span>NO</span></h1>
+    <div className="topbar-container">
+      {/* Mobile-only header row: Logo + Notifications */}
+      <div className="mobile-only topbar-mobile-header">
+        <Link href="/" className="topbar-logo-link">
+          <TopbarLogo className="topbar-logo-svg" />
+        </Link>
+        <Link href="/notifications" className="icon-btn notification-btn" aria-label="Notifications">
+          <IoNotificationsOutline size={28} />
+          {unreadCount > 0 && <span className="notification-badge" />}
+        </Link>
       </div>
 
-      <div className="right-controls">
-        <button className="control-btn">
-          <Search size={22} />
-        </button>
-        <button className="control-btn">
-          <Bell size={22} />
-        </button>
-        {user ? (
-          user.user_metadata?.avatar_url ? (
-            <Image
-              src={user.user_metadata.avatar_url}
-              alt="Profile"
-              width={28}
-              height={28}
-              style={{ borderRadius: "50%", border: "2px solid var(--border)" }}
-            />
-          ) : (
-            <div style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "var(--primary)",
-              color: "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "0.75rem",
-              fontWeight: 700,
-            }}>
-              {(user.email?.[0] || "U").toUpperCase()}
-            </div>
-          )
-        ) : (
-          <button className="control-btn" onClick={() => signInWithGoogle()}>
-            <LogIn size={22} />
+      <div className="topbar-inner">
+        {/* Left: Logo (Desktop uses Sidebar, mobile uses the row above) */}
+        <Link href="/" className="topbar-logo-link desktop-only">
+          <TopbarLogo className="topbar-logo-svg" />
+        </Link>
+
+        {/* Center: Search (Desktop & Mobile styled separately in CSS) */}
+        <div className="topbar-search">
+          <IoSearchOutline size={20} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search events..."
+            className="search-input"
+          />
+          <button className="location-btn" aria-label="Near me">
+            <IoLocationOutline size={18} />
           </button>
-        )}
+        </div>
+
+        {/* Right: Actions (Desktop only - Mobile uses Bottom Nav for profile) */}
+        <div className="topbar-actions desktop-only">
+          {/* Notifications (Desktop version) */}
+          <Link href="/notifications" className="icon-btn notification-btn" aria-label="Notifications">
+            <IoNotificationsOutline size={20} />
+            {unreadCount > 0 && <span className="notification-badge" />}
+          </Link>
+
+          {/* Profile / Auth */}
+          {user ? (
+            <Link href="/profile" className="profile-link">
+              {user.user_metadata?.avatar_url ? (
+                <Image
+                  src={user.user_metadata.avatar_url}
+                  alt="Profile"
+                  width={36}
+                  height={36}
+                  className="avatar-img"
+                />
+              ) : (
+                <div className="avatar-fallback">
+                  {(user.email?.[0] || "U").toUpperCase()}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <button onClick={() => signInWithGoogle()} className="signin-btn">
+              <IoLogInOutline size={18} />
+              <span>Sign In</span>
+            </button>
+          )}
+        </div>
       </div>
-
-      <style jsx>{`
-        .top-bar {
-          display: none;
-          height: 60px;
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          padding: 0 1rem;
-          align-items: center;
-          justify-content: space-between;
-          z-index: 100;
-        }
-
-        .logo-text-small {
-          font-size: 1.25rem;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-        }
-
-        .logo-text-small span {
-          color: var(--primary);
-        }
-
-        .right-controls {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .control-btn {
-          color: var(--secondary-text);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        @media (max-width: 640px) {
-          .top-bar {
-            display: flex;
-          }
-        }
-      `}</style>
     </div>
   );
 }
