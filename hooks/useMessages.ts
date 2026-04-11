@@ -125,19 +125,22 @@ export function useMessages() {
                 return msgs;
             });
 
-            const combined = [
-                ...uniqueMsgData,
+            const combined: DBMessage[] = [
+                ...(uniqueMsgData as any[]),
                 ...normalizedQuestions
-            ];
+            ].map(m => ({
+                ...m,
+                created_at: m.created_at || new Date().toISOString()
+            }));
 
             const finalDeduped: DBMessage[] = [];
-            combined.sort((a, b) => b.created_at.localeCompare(a.created_at)).forEach(msg => {
+            combined.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")).forEach(msg => {
                 const isDuplicate = finalDeduped.some(existing =>
                     existing.sender_id === msg.sender_id &&
                     existing.recipient_id === msg.recipient_id &&
                     existing.body === msg.body &&
                     existing.event_id === msg.event_id &&
-                    Math.abs(new Date(existing.created_at).getTime() - new Date(msg.created_at).getTime()) < 120000
+                    Math.abs(new Date(existing.created_at || 0).getTime() - new Date(msg.created_at || 0).getTime()) < 120000
                 );
                 if (!isDuplicate) {
                     finalDeduped.push(msg);
