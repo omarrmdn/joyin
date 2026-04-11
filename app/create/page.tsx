@@ -159,7 +159,7 @@ export default function CreateEventPage() {
           time: startTime,
           end_date: endDate || null,
           end_time: endTime || null,
-          capacity: capacity ? parseInt(capacity) : null,
+          max_capacity: capacity ? parseInt(capacity) : null,
           price: price ? parseFloat(price) : 0,
           gender,
           image_url: imageUrl,
