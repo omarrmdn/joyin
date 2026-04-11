@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/language-context";
 
 export function Footer() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   // Hide footer on messages pages
   if (pathname?.startsWith("/messages")) {
