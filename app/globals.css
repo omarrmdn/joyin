@@ -831,11 +831,10 @@ button {
 .create-header h1 {
   font-size: 36px;
   font-weight: 800;
-  color: var(--foreground);
+  color: var(--white);
   margin-bottom: 8px;
-  background: linear-gradient(to right, var(--foreground), var(--secondary-text));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  -webkit-text-fill-color: initial;
 }
 
 .create-header p {
@@ -1320,10 +1319,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    ============================================ */
 .events-web-container {
   width: 100%;
-  max-width: 900px;
-  margin-left: 40px;
-  /* Aligns with header search bar: topbar-container (30px) + topbar-search margin (10px) */
-  padding: 40px 20px 100px 0;
+  max-width: 100%; /* Take full width until pfp end */
+  margin-inline-start: 0;
+  padding: 40px 20px 100px;
+  padding-inline-start: 40px; /* 40px start to align with header search, 20px end to align with pfp */
 }
 
 .events-header-simple {
@@ -1342,6 +1341,17 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   overflow-x: auto;
   padding-bottom: 12px;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.days-horizontal-slider::-webkit-scrollbar {
+  height: 4px;
+}
+
+.days-horizontal-slider::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
 }
 
 .days-slider-inner {
@@ -1573,6 +1583,47 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   padding: 60px 0;
   color: var(--secondary-text);
   gap: 12px;
+}
+
+/* RTL Support for Search Result */
+[dir="rtl"] .search-result-content {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .sr-info-item {
+  display: flex;
+  gap: 6px;
+  /* No row-reverse needed if direction: rtl is set correctly */
+}
+
+[dir="rtl"] .sr-title-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+[dir="rtl"] .sr-dropdown-menu {
+  right: auto;
+  left: 0;
+}
+
+[dir="rtl"] .sr-dropdown-item {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .sr-badge {
+  direction: rtl;
+}
+
+[dir="rtl"] .events-header-simple {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .days-slider-inner {
+  justify-content: flex-start;
+  direction: rtl;
 }
 
 /* ============================================

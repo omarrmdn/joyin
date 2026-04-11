@@ -43,7 +43,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
       <Link href={`/explore/${event.id}`} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
           <Image 
-            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
+            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (event.image_url || event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
             alt={event.title}
             fill
             className="search-result-image"
