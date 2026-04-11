@@ -59,76 +59,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Initialize Google Identity Services
-    const initializeGis = () => {
-      if (typeof window !== "undefined" && window.google?.accounts?.id && !initializationStarted.current) {
-        initializationStarted.current = true;
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          callback: async (response: CredentialResponse) => {
-            const { error } = await supabase.auth.signInWithIdToken({
-              provider: "google",
-              token: response.credential,
-            });
-            if (error) console.error("Error signing in with Google ID Token:", error);
-          },
-          use_fedcm_for_prompt: false,
-        });
-      } else if (typeof window !== "undefined" && !window.google?.accounts?.id) {
-        // Check if script is already in document to avoid double loading
-        if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) return;
-
-        const script = document.createElement("script");
-        script.src = "https://accounts.google.com/gsi/client";
-        script.async = true;
-        script.defer = true;
-        script.onload = initializeGis;
-        document.head.appendChild(script);
-      }
-    };
-
-    initializeGis();
-
     return () => {
       subscription.unsubscribe();
     };
   }, [syncUser]);
 
   const signInWithGoogle = useCallback(async () => {
-    if (typeof window !== "undefined" && window.google?.accounts?.id) {
-      window.google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // If One Tap prompt can't be shown (e.g. user dismissed it before),
-          // fall back to rendering a button in a temporary container
-          const container = document.createElement("div");
-          container.id = "google-signin-fallback";
-          container.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:99999;";
-          const inner = document.createElement("div");
-          inner.style.cssText = "background:var(--card-background,#1a1a1a);padding:40px;border-radius:20px;min-width:320px;display:flex;flex-direction:column;align-items:center;gap:20px;";
-          const title = document.createElement("p");
-          title.textContent = "Sign in with Google";
-          title.style.cssText = "color:#fff;font-size:18px;font-weight:600;margin:0;";
-          const btnContainer = document.createElement("div");
-          btnContainer.id = "google-signin-fallback-btn";
-          const closeBtn = document.createElement("button");
-          closeBtn.textContent = "✕";
-          closeBtn.style.cssText = "position:absolute;top:20px;right:20px;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;";
-          closeBtn.onclick = () => container.remove();
-          inner.appendChild(title);
-          inner.appendChild(btnContainer);
-          container.appendChild(closeBtn);
-          container.appendChild(inner);
-          container.onclick = (e) => { if (e.target === container) container.remove(); };
-          document.body.appendChild(container);
-          window.google.accounts.id.renderButton(btnContainer, {
-            theme: "outline",
-            size: "large",
-            width: 280,
-            text: "continue_with",
-            shape: "rectangular",
-          });
-        }
-      });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+    if (error) {
+      console.error("Error signing in with Google:", error.message);
     }
   }, []);
 

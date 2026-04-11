@@ -17,7 +17,15 @@ export function GoogleOneTap() {
     if (user || loading) return;
 
     const showPrompt = () => {
-      if (typeof window !== "undefined" && window.google?.accounts?.id) {
+      if (typeof window !== "undefined" && window.google?.accounts?.id && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          callback: () => {
+            // Callback handles the credential if One Tap succeeds.
+            // Handled separately or can be integrated with supabase.auth.signInWithIdToken
+          }
+        });
+        
         window.google.accounts.id.prompt((notification: { isNotDisplayed: () => boolean; getNotDisplayedReason: () => string }) => {
           if (notification.isNotDisplayed()) {
             console.log("One Tap not displayed:", notification.getNotDisplayedReason());

@@ -7,6 +7,7 @@ import { IoNotificationsOutline, IoLogInOutline, IoLocationOutline, IoSearchOutl
 import Image from "next/image";
 import Link from "next/link";
 import TopbarLogo from "./TopbarLogo";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 interface TopBarProps {
   searchQuery?: string;
@@ -81,7 +82,6 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
             {unreadCount > 0 && <span className="notification-badge" />}
           </Link>
 
-          {/* Profile / Auth */}
           {user ? (
             <Link href="/profile" className="profile-link">
               {user.user_metadata?.avatar_url ? (
@@ -99,10 +99,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
               )}
             </Link>
           ) : (
-            <button onClick={() => signInWithGoogle()} className="signin-btn">
-              <IoLogInOutline size={18} />
-              <span>{t.signIn}</span>
-            </button>
+            <GoogleSignInButton />
           )}
         </div>
       </div>
