@@ -136,28 +136,53 @@ export default function CreateEventPage() {
         imageUrl = publicUrl;
       }
 
-      // Insert into Supabase (Logic would go here in a real scenario)
-      console.log("Publishing Event:", {
-        title,
-        description,
-        eventType,
-        location,
-        link,
-        startDate,
-        startTime,
-        endDate,
-        endTime,
-        capacity,
-        price,
-        gender,
-        imageUrl,
-        tags: selectedTags
-      });
+      // Insert into Supabase
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .insert({
+          title,
+          description,
+          is_online: eventType === 'online',
+          location: eventType === 'onsite' ? location : null,
+          meeting_link: eventType === 'online' ? link : null,
+          date: startDate,
+          time: startTime,
+          end_date: endDate || null,
+          end_time: endTime || null,
+          capacity: capacity ? parseInt(capacity) : null,
+          price: price ? parseFloat(price) : 0,
+          gender,
+          image_url: imageUrl,
+          tags: selectedTags, // Duplicate tags here for easy retrieval
+          organizer_id: (await supabase.auth.getUser()).data.user?.id
+        })
+        .select()
+        .single();
 
-      alert("Event published successfully! (Mock implementation)");
-    } catch (error) {
+      if (eventError) throw eventError;
+
+      // Also insert into event_tags join table for relational integrity
+      if (eventData && selectedTags.length > 0) {
+        // First get tag IDs
+        const { data: tagsData } = await supabase
+          .from('tags')
+          .select('id, name')
+          .in('name', selectedTags);
+
+        if (tagsData) {
+          const eventTags = tagsData.map(t => ({
+            event_id: eventData.id,
+            tag_id: t.id
+          }));
+          await supabase.from('event_tags').insert(eventTags);
+        }
+      }
+
+      alert("Event published successfully!");
+      window.location.href = "/"; // Redirect to home
+    } catch (error: any) {
       console.error("Error publishing event:", error);
-      alert("Failed to publish event.");
+      alert(`Failed to publish event: ${error.message}`);
     } finally {
       setIsPublishing(false);
     }

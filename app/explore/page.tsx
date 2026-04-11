@@ -1,15 +1,60 @@
-"use client";
-
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { EventCard } from "@/components/EventCard";
-import { IoSearchOutline, IoLocationSharp, IoCalendarSharp, IoOptionsOutline } from "react-icons/io5";
+import { IoSearchOutline, IoLocationSharp, IoOptionsOutline } from "react-icons/io5";
+import { supabase } from "@/lib/supabase";
 
 export default function ExplorePage() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [tags, setTags] = useState<string[]>(["All"]);
+  const [activeTag, setActiveTag] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const { data: tagsData } = await supabase.from('tags').select('name').order('name');
+        if (tagsData) setTags(["All", ...tagsData.map(t => t.name)]);
+
+        const { data: eventsData } = await supabase.from('events').select(`
+          *,
+          event_tags (tags (name))
+        `).order('date', { ascending: true });
+        
+        if (eventsData) {
+          setEvents(eventsData.map(e => ({
+            ...e,
+            tags: e.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
+          })));
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const filteredEvents = events.filter(event => {
+    const matchesTag = activeTag === "All" || event.tags?.includes(activeTag);
+    const matchesSearch = !searchQuery || 
+      event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLoc = !locationQuery || 
+      event.location?.toLowerCase().includes(locationQuery.toLowerCase());
+    
+    return matchesTag && matchesSearch && matchesLoc;
+  });
+
   return (
     <>
       <div className="topbar-wrapper">
-        <TopBar />
+        <TopBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       </div>
       
       <div className="explore-content-container">
@@ -21,25 +66,41 @@ export default function ExplorePage() {
         <div className="search-box-container glass-lux">
            <div className="search-main">
              <IoSearchOutline className="icon" />
-             <input type="text" placeholder="What are you interested in?" />
+             <input 
+              type="text" 
+              placeholder="What are you interested in?" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+             />
            </div>
            <div className="search-divider"></div>
            <div className="search-location">
              <IoLocationSharp className="icon" color="var(--accent)" />
-             <input type="text" placeholder="Anywhere" />
+             <input 
+              type="text" 
+              placeholder="Anywhere" 
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+             />
            </div>
            <button className="publish-btn search-submit-btn">Search</button>
         </div>
 
         <div className="category-chips">
-           {["All", "Concerts", "Networking", "Parties", "Tech", "Workshops", "Art", "Food", "Charity"].map(cat => (
-             <button key={cat} className="chip">{cat}</button>
+           {tags.map(cat => (
+             <button 
+              key={cat} 
+              className={`chip ${activeTag === cat ? 'active' : ''}`}
+              onClick={() => setActiveTag(cat)}
+             >
+              {cat}
+             </button>
            ))}
         </div>
 
         <section className="results-section">
            <div className="results-header">
-             <span>Found 1,240 events</span>
+             <span>Found {filteredEvents.length} events</span>
              <button className="filter-text-btn">
                 <IoOptionsOutline size={16} />
                 Sort & Filter
@@ -47,7 +108,21 @@ export default function ExplorePage() {
            </div>
 
            <div className="feed-container">
-               {/* This would be populated dynamically */}
+               {loading ? (
+                 <p>Loading events...</p>
+               ) : filteredEvents.length > 0 ? (
+                 filteredEvents.map(event => (
+                   <EventCard 
+                    key={event.id}
+                    {...event}
+                    image={event.image_url}
+                    attendingCount={0}
+                    attendingAvatars={[]}
+                   />
+                 ))
+               ) : (
+                 <p>No events found.</p>
+               )}
            </div>
         </section>
       </div>

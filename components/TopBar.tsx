@@ -7,9 +7,36 @@ import Image from "next/image";
 import Link from "next/link";
 import TopbarLogo from "./TopbarLogo";
 
-export function TopBar() {
+interface TopBarProps {
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  onLocationPress?: () => void;
+}
+
+export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: TopBarProps) {
   const { user, signInWithGoogle } = useAuth();
   const { unreadCount } = useNotifications();
+
+  const handleLocationClick = () => {
+    if (onLocationPress) {
+      onLocationPress();
+      return;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          alert(`Location detected: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}. Filtering events...`);
+        },
+        (error) => {
+          alert("Error detecting location: " + error.message);
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  };
 
   return (
     <div className="topbar-container">
@@ -30,28 +57,15 @@ export function TopBar() {
           <IoSearchOutline size={20} className="search-icon" />
           <input
             type="text"
-            placeholder="Search events..."
+            placeholder="Search events, locations, or tags..."
             className="search-input"
+            value={searchQuery}
+            onChange={(e) => onSearchChange?.(e.target.value)}
           />
           <button 
             className="location-btn" 
             aria-label="Near me"
-            onClick={() => {
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const { latitude, longitude } = position.coords;
-                    alert(`Location detected: ${latitude}, ${longitude}. Search updated.`);
-                    // In a real app, we would use these coords to filter events.
-                  },
-                  (error) => {
-                    alert("Error detecting location: " + error.message);
-                  }
-                );
-              } else {
-                alert("Geolocation is not supported by this browser.");
-              }
-            }}
+            onClick={handleLocationClick}
           >
             <IoLocationOutline size={18} />
           </button>
