@@ -225,8 +225,12 @@ export function useMessages() {
             if (sendError) throw sendError;
 
             setMessages(prev => {
-                if (prev.some(m => m.id === data.id)) return prev;
-                return [data, ...prev];
+                const newData = {
+                    ...data,
+                    created_at: data.created_at || new Date().toISOString()
+                } as any as DBMessage;
+                if (prev.some(m => m.id === newData.id)) return prev;
+                return [newData, ...prev];
             });
             return data;
         } catch (err) {
