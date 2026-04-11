@@ -21,6 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 import { IoSearchOutline, IoClose } from "react-icons/io5";
+import { compressImage } from "@/lib/compressImage";
 
 // Mock tags for interests
 const INTERESTS = [
@@ -141,14 +142,21 @@ export default function ProfilePage() {
     try {
       setIsUpdating(true);
       const { supabase } = await import("@/lib/supabase");
+
+      // Compress before upload (400px max for profile pics)
+      let fileToUpload: File;
+      try {
+        fileToUpload = await compressImage(file, 400, 0.8);
+      } catch {
+        fileToUpload = file;
+      }
       
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}_${Date.now()}.jpg`;
       const filePath = fileName;
       
       const { error: uploadError } = await supabase.storage
         .from('user_pfp')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, fileToUpload, { upsert: true });
         
       if (uploadError) throw uploadError;
       

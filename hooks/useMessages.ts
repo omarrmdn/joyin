@@ -164,8 +164,9 @@ export function useMessages() {
 
         if (!user) return;
 
+        const channelId = Math.random().toString(36).substring(7);
         const messagesChannel = supabase
-            .channel('messages_changes')
+            .channel(`messages_changes_${channelId}`)
             .on(
                 'postgres_changes',
                 {
@@ -180,7 +181,7 @@ export function useMessages() {
             .subscribe();
 
         const questionsChannel = supabase
-            .channel('questions_changes')
+            .channel(`questions_changes_${channelId}`)
             .on(
                 'postgres_changes',
                 {

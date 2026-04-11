@@ -20,6 +20,7 @@ import {
   IoInformationCircleOutline
 } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/compressImage";
 
 type EventType = "onsite" | "online";
 type Gender = "all" | "male" | "female";
@@ -102,15 +103,26 @@ export default function CreateEventPage() {
     setSelectedTags(selectedTags.filter(t => t !== tag));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file, 1200, 0.75);
+        setImage(compressed);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(compressed);
+      } catch {
+        // Fallback to original if compression fails
+        setImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -129,8 +141,7 @@ export default function CreateEventPage() {
 
       let imageUrl = "";
       if (image) {
-        const fileExt = image.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${Math.random()}.jpg`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('event_pic')
           .upload(fileName, image);
