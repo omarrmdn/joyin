@@ -19,20 +19,29 @@ export default function MyEventsPage() {
       if (!user) return;
       setLoading(true);
       try {
-        // Since we don't have a solid join table name, we'll fetch events 
-        // that the user created or is listed as organizer/participant if we can.
-        // For now, let's fetch events that the user is attending.
-        // If there's no attendees table, we might just fetch events where user is organizer.
-        const { data, error } = await supabase
+        // Fetch events where user is organizer OR participant
+        const { data: organizedData } = await supabase
           .from('events')
           .select('*')
           .eq('organizer_id', user.id);
+          
+        const { data: attendedData } = await supabase
+          .from('attendees')
+          .select('events (*)')
+          .eq('user_id', user.id);
         
-        if (data) {
-          setEvents(data);
-          if (data.length > 0) {
-            setSelectedDate(data[0].date);
-          }
+        const attendingEvents = attendedData?.map(a => a.events).filter(Boolean) || [];
+        const organizedEvents = organizedData || [];
+        
+        // Combine and deduplicate
+        const combined = Array.from(new Map([
+          ...organizedEvents.map(e => [e.id, e]),
+          ...attendingEvents.map(e => [e.id, e])
+        ]).values());
+        
+        setEvents(combined);
+        if (combined.length > 0) {
+          setSelectedDate(combined[0].date);
         }
       } catch (error) {
         console.error("Error fetching my events:", error);

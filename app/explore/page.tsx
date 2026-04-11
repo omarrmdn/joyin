@@ -25,13 +25,15 @@ export default function ExplorePage() {
 
         const { data: eventsData } = await supabase.from('events').select(`
           *,
-          event_tags (tags (name))
+          event_tags (tags (name)),
+          attendees (count)
         `).order('date', { ascending: true });
         
         if (eventsData) {
           const mappedEvents = eventsData.map(e => ({
             ...e,
-            tags: e.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
+            tags: (e.event_tags as any)?.map((et: any) => et.tags?.name).filter(Boolean) || [],
+            attendingCount: (e.attendees as any)?.[0]?.count || 0
           }));
           setEvents(mappedEvents);
 
@@ -126,7 +128,7 @@ export default function ExplorePage() {
                     key={event.id}
                     {...event}
                     image={event.image_url}
-                    attendingCount={0}
+                    attendingCount={event.attendingCount || 0}
                     attendingAvatars={[]}
                    />
                  ))

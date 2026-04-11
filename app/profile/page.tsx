@@ -483,12 +483,30 @@ export default function ProfilePage() {
                         className={`bug-submit-btn-lux ${isSubmittingBug || !bugDescription.trim() ? 'disabled' : ''}`}
                         disabled={isSubmittingBug || !bugDescription.trim()}
                         onClick={async () => {
-                          setIsSubmittingBug(true);
-                          await new Promise(r => setTimeout(r, 1500));
-                          alert(t.reportSubmitted);
-                          setBugDescription("");
-                          setBugImages([]);
-                          setIsSubmittingBug(false);
+                          try {
+                            setIsSubmittingBug(true);
+                            const { supabase } = await import("@/lib/supabase");
+                            
+                            const { error } = await supabase
+                              .from('bug_reports')
+                              .insert({
+                                user_id: user?.id || null,
+                                description: bugDescription,
+                                images: bugImages, // Note: these are currently blob URLs, would need real storage upload for production
+                                status: 'open'
+                              });
+
+                            if (error) throw error;
+                            
+                            alert(t.reportSubmitted);
+                            setBugDescription("");
+                            setBugImages([]);
+                          } catch (err) {
+                            console.error("Error submitting bug:", err);
+                            alert("Failed to submit report. Please try again.");
+                          } finally {
+                            setIsSubmittingBug(false);
+                          }
                         }}
                       >
                         {isSubmittingBug ? t.submitting : t.sendReport}
