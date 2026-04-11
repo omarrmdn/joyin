@@ -20,15 +20,7 @@ export default function Home() {
     async function fetchData() {
       setLoading(true);
       try {
-        // Fetch Tags
-        const { data: tagsData } = await supabase
-          .from('tags')
-          .select('name')
-          .order('name');
-        
-        if (tagsData) {
-          setTags([t.all, t.nearMe, ...tagsData.map(t => t.name)]);
-        }
+
 
         // Fetch Events with Tag mapping
         const { data: eventsData } = await supabase
@@ -50,6 +42,13 @@ export default function Home() {
             tags: event.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
           }));
           setEvents(mappedEvents);
+
+          const uniqueTags = new Set<string>();
+          mappedEvents.forEach(event => {
+            event.tags.forEach((tag: string) => uniqueTags.add(tag));
+          });
+          const sortedTags = Array.from(uniqueTags).sort();
+          setTags([t.all, t.nearMe, ...sortedTags]);
         }
       } catch (error) {
         console.error("Error fetching data:", error);

@@ -21,8 +21,7 @@ export default function ExplorePage() {
     async function fetchData() {
       setLoading(true);
       try {
-        const { data: tagsData } = await supabase.from('tags').select('name').order('name');
-        if (tagsData) setTags([t.all, ...tagsData.map(t => t.name)]);
+
 
         const { data: eventsData } = await supabase.from('events').select(`
           *,
@@ -30,10 +29,18 @@ export default function ExplorePage() {
         `).order('date', { ascending: true });
         
         if (eventsData) {
-          setEvents(eventsData.map(e => ({
+          const mappedEvents = eventsData.map(e => ({
             ...e,
             tags: e.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
-          })));
+          }));
+          setEvents(mappedEvents);
+
+          const uniqueTags = new Set<string>();
+          mappedEvents.forEach(event => {
+            event.tags.forEach((tag: string) => uniqueTags.add(tag));
+          });
+          const sortedTags = Array.from(uniqueTags).sort();
+          setTags([t.all, ...sortedTags]);
         }
       } catch (error) {
         console.error(error);

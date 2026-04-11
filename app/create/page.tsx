@@ -51,6 +51,12 @@ export default function CreateEventPage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Location Autocomplete
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [selectedLocationCoords, setSelectedLocationCoords] = useState<{latitude: number; longitude: number} | null>(null);
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+
   // Clear error when any relevant state changes
   useEffect(() => {
     if (formError) setFormError(null);
@@ -146,6 +152,8 @@ export default function CreateEventPage() {
           description,
           is_online: eventType === 'online',
           location: eventType === 'onsite' ? location : null,
+          latitude: eventType === 'onsite' ? selectedLocationCoords?.latitude : null,
+          longitude: eventType === 'onsite' ? selectedLocationCoords?.longitude : null,
           meeting_link: eventType === 'online' ? link : null,
           date: startDate,
           time: startTime,
@@ -196,10 +204,50 @@ export default function CreateEventPage() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowTagDropdown(false);
       }
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+        setShowLocationSuggestions(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const fetchLocationSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setLocationSuggestions([]);
+      setShowLocationSuggestions(false);
+      return;
+    }
+
+    const apiKey = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+    if (!apiKey) return;
+
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${apiKey}&autocomplete=true&limit=5`;
+      const response = await fetch(url);
+      const json = await response.json();
+
+      if (json.features) {
+        setLocationSuggestions(json.features.map((f: any) => ({
+          id: f.id,
+          description: f.place_name,
+          longitude: f.center[0],
+          latitude: f.center[1]
+        })));
+        setShowLocationSuggestions(true);
+      }
+    } catch (err) {
+      console.error("Location autocomplete error:", err);
+    }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocation(val);
+    setSelectedLocationCoords(null);
+    fetchLocationSuggestions(val);
+  };
+
 
   return (
     <>
@@ -286,15 +334,39 @@ export default function CreateEventPage() {
               </div>
 
               {eventType === 'onsite' ? (
-                <div className="form-group">
+                <div className="form-group" ref={locationDropdownRef}>
                   <label><IoLocationSharp size={18} color="var(--accent)" /> {t.location}</label>
-                  <input 
-                    type="text" 
-                    placeholder={t.locationPlaceholder} 
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    required
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="text" 
+                      placeholder={t.locationPlaceholder} 
+                      value={location}
+                      onChange={handleLocationChange}
+                      onFocus={() => {
+                        if (locationSuggestions.length > 0) setShowLocationSuggestions(true);
+                      }}
+                      required
+                    />
+                    {showLocationSuggestions && locationSuggestions.length > 0 && (
+                      <div className="mobile-results-list" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--card-background)', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '4px', overflow: 'hidden' }}>
+                        {locationSuggestions.map(s => (
+                          <div 
+                            key={s.id} 
+                            className="result-item"
+                            style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
+                            onClick={() => {
+                              setLocation(s.description);
+                              setSelectedLocationCoords({ latitude: s.latitude, longitude: s.longitude });
+                              setShowLocationSuggestions(false);
+                            }}
+                          >
+                            <IoLocationSharp size={16} color="var(--accent)" />
+                            <span style={{ fontSize: '14px', color: 'var(--foreground)' }}>{s.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="form-group">
