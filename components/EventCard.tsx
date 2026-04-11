@@ -2,9 +2,10 @@
 
 import { shareEvent } from "@/lib/share";
 import { useLanguage } from "@/lib/language-context";
-import { IoCalendarSharp, IoLocationSharp, IoShareSocialOutline } from "react-icons/io5";
+import { IoCalendarSharp, IoLocationSharp, IoShareSocialOutline, IoGlobeOutline } from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 interface EventCardProps {
   id: string;
@@ -30,6 +31,7 @@ export function EventCard({
   attendingAvatars = [],
 }: EventCardProps) {
   const { t } = useLanguage();
+  const [imgError, setImgError] = useState(false);
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,11 +47,12 @@ export function EventCard({
       <div className="event-card">
         <div className="event-card-image-container">
           <Image 
-            src={image} 
+            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
             alt={title} 
             fill 
             className="event-card-image"
             sizes="(max-width: 768px) 100vw, 33vw"
+            onError={() => setImgError(true)}
           />
           <button 
             className="event-card-share" 
@@ -66,7 +69,7 @@ export function EventCard({
           
           <div className="event-card-info-row">
             <div className="event-card-info-item">
-              <IoLocationSharp size={16} />
+              {location?.toLowerCase() === "online" ? <IoGlobeOutline size={16} /> : <IoLocationSharp size={16} />}
               <span className="event-card-info-text">{displayLocation}</span>
             </div>
             <div className="event-card-info-item">

@@ -12,26 +12,28 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
+export function LanguageProvider({ 
+  children,
+  initialLanguage = "en"
+}: { 
+  children: React.ReactNode;
+  initialLanguage?: Language;
+}) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
 
   useEffect(() => {
-    // Load persisted language
+    // Sync with localStorage if it differs (e.g. user changed in another tab)
     const savedLang = localStorage.getItem("app-language") as Language;
-    if (savedLang && (savedLang === "en" || savedLang === "ar-EG")) {
+    if (savedLang && (savedLang === "en" || savedLang === "ar-EG") && savedLang !== language) {
       setLanguageState(savedLang);
-    } else {
-      // Try to detect from browser
-      const browserLang = navigator.language;
-      if (browserLang.startsWith("ar")) {
-        setLanguageState("ar-EG");
-      }
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem("app-language", lang);
+    // Set cookie for server-side detection
+    document.cookie = `app-language=${lang}; path=/; max-age=31536000; SameSite=Lax`;
     document.documentElement.lang = lang.split("-")[0];
     document.documentElement.dir = lang === "ar-EG" ? "rtl" : "ltr";
   };

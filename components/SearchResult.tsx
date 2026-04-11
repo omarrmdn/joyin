@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { IoLocationSharp, IoCalendarSharp, IoCloseCircle, IoEllipsisVertical, IoShareSocialOutline, IoBan } from "react-icons/io5";
+import { IoLocationSharp, IoCalendarSharp, IoCloseCircle, IoEllipsisVertical, IoShareSocialOutline, IoBan, IoGlobeOutline } from "react-icons/io5";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
 
@@ -15,6 +15,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,10 +43,11 @@ export function SearchResult({ event, index }: SearchResultProps) {
       <Link href={`/explore/${event.id}`} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
           <Image 
-            src={event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000"} 
+            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
             alt={event.title}
             fill
             className="search-result-image"
+            onError={() => setImgError(true)}
           />
           {event.status === 'canceled' && <div className="canceled-overlay" />}
         </div>
@@ -96,7 +98,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
 
           <div className="sr-info-row">
             <div className="sr-info-item">
-              <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />
+              {event.location?.toLowerCase() === "online" ? <IoGlobeOutline size={14} className="sr-icon" color="var(--accent)" /> : <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />}
               <span className="sr-info-text">
                 {event.location?.toLowerCase() === "online" ? t.online : event.location}
               </span>

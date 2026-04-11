@@ -71,21 +71,36 @@ export const metadata: Metadata = {
 import { GlobalShareModal } from "@/components/GlobalShareModal";
 
 import { LanguageProvider } from "@/lib/language-context";
+import { Language } from "@/lib/translations";
 import { GoogleOneTap } from "@/components/GoogleOneTap";
 import Script from "next/script";
+import { cookies, headers } from "next/headers";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const headersList = await headers();
+  const acceptLanguage = headersList.get("accept-language");
+  
+  const language = (cookieStore.get("app-language")?.value as Language) || 
+                   (acceptLanguage?.startsWith("ar") ? "ar-EG" : "en");
+  const dir = language === "ar-EG" ? "rtl" : "ltr";
+
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${graphikArabic.variable}`} data-theme="dark">
+    <html 
+      lang={language.split("-")[0]} 
+      dir={dir}
+      className={`${geistSans.variable} ${geistMono.variable} ${graphikArabic.variable}`} 
+      data-theme="dark"
+    >
       <head>
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </head>
       <body className="antialiased">
-        <LanguageProvider>
+        <LanguageProvider initialLanguage={language}>
           <AuthProvider>
             <GoogleOneTap />
             <div className="app-shell">

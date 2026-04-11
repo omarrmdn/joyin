@@ -8,7 +8,8 @@ import {
   IoTimeOutline,
   IoHeartOutline,
   IoLocationSharp,
-  IoShareSocialOutline
+  IoShareSocialOutline,
+  IoGlobeOutline
 } from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,6 +36,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { t } = useLanguage();
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -221,11 +223,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
               <Image 
-                src={currentEvent.image_url || currentEvent.image || ""} 
+                src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (currentEvent.image_url || currentEvent.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
                 alt={currentEvent.title} 
                 fill 
                 className="ed-hero-image"
                 priority
+                onError={() => setImgError(true)}
               />
               <div className="ed-image-overlay" />
             </div>
@@ -328,7 +331,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
                 <div className="ed-detail-item">
                   <div className="ed-detail-icon-box">
-                    <IoLocationSharp size={20} />
+                    {currentEvent.location?.toLowerCase() === "online" ? <IoGlobeOutline size={20} /> : <IoLocationSharp size={20} />}
                   </div>
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">{t.location}</span>
