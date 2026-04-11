@@ -117,7 +117,13 @@ export function useNotifications() {
         throw error;
       }
 
-      const finalData = data && data.length > 0 ? data : mockNotifications;
+      const finalData: Notification[] = (data && data.length > 0 ? data : mockNotifications).map((n) => ({
+        ...n,
+        created_at: n.created_at || new Date().toISOString(),
+        data: (n.data as Record<string, any>) || {},
+        read: !!n.read,
+      })) as any[];
+      
       setNotifications(finalData);
       const unread = finalData.filter((n) => !n.read).length;
       setUnreadCount(unread);
@@ -190,7 +196,13 @@ export function useNotifications() {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          const newNotification = payload.new as Notification;
+          const raw = payload.new as any;
+          const newNotification: Notification = {
+            ...raw,
+            created_at: raw.created_at || new Date().toISOString(),
+            data: raw.data || {},
+            read: !!raw.read
+          };
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
         }
@@ -204,7 +216,13 @@ export function useNotifications() {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          const updated = payload.new as Notification;
+          const raw = payload.new as any;
+          const updated: Notification = {
+            ...raw,
+            created_at: raw.created_at || new Date().toISOString(),
+            data: raw.data || {},
+            read: !!raw.read
+          };
           setNotifications((prev) => prev.map(n => n.id === updated.id ? updated : n));
           
           setNotifications(prev => {
