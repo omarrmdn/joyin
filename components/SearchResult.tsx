@@ -104,7 +104,9 @@ export function SearchResult({ event, index }: SearchResultProps) {
           </div>
 
           <div className="sr-footer">
-            <span className="sr-price">{event.price === 0 || event.price === "Free" ? "Free" : event.price}</span>
+            <span className="sr-price">
+              {event.price === 0 || event.price === "Free" ? "Free" : `${event.price} EGP`}
+            </span>
             
             {event.status === 'canceled' && (
               <div className="sr-badge sr-badge-canceled">

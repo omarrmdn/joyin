@@ -71,7 +71,7 @@ export function EventCard({
 
           <div className="event-card-footer">
             <div className="event-card-price">
-              {typeof price === "number" ? `$${price}` : price}
+              {typeof price === "number" ? `${price} EGP` : price}
             </div>
             
             <div className="event-card-avatars-container">

@@ -1,71 +1,70 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { SearchResult } from "@/components/SearchResult";
 import { IoCalendarOutline } from "react-icons/io5";
-
-// Mock data spanning different dates
-const myEvents = [
-  {
-    id: "m1",
-    title: "Startup Weekend Hackathon",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
-    location: "Tech Hub Sandbox",
-    date: "Dec 10, 2026",
-    rawDate: "2026-12-10",
-    rawEndDate: "2026-12-12",
-    price: "Free",
-    isAttending: true,
-  },
-  {
-    id: "m2",
-    title: "UI/UX Masterclass",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop",
-    location: "Creative Studios",
-    date: "Dec 15, 2026",
-    rawDate: "2026-12-15",
-    price: "$150",
-    isAttending: true,
-  },
-  {
-    id: "m3",
-    title: "Product Marketing Summit",
-    image: "https://images.unsplash.com/photo-1475721028070-17cb25e7d56e?q=80&w=2000&auto=format&fit=crop",
-    location: "Grand Hotel",
-    date: "Dec 15, 2026",
-    rawDate: "2026-12-15",
-    price: "$299",
-    isAttending: true,
-  }
-];
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 
 export default function MyEventsPage() {
-  const getDaysInRange = (start: string, end: string) => {
-    const days = [];
-    const curr = new Date(start);
-    const last = new Date(end);
-    while (curr <= last) {
-      days.push(curr.toISOString().split('T')[0]);
-      curr.setDate(curr.getDate() + 1);
+  const { user } = useAuth();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+
+  useEffect(() => {
+    async function fetchMyEvents() {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // Since we don't have a solid join table name, we'll fetch events 
+        // that the user created or is listed as organizer/participant if we can.
+        // For now, let's fetch events that the user is attending.
+        // If there's no attendees table, we might just fetch events where user is organizer.
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('organizer_id', user.id);
+        
+        if (data) {
+          setEvents(data);
+          if (data.length > 0) {
+            setSelectedDate(data[0].date);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching my events:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-    return days;
-  };
+    fetchMyEvents();
+  }, [user]);
 
   const availableDates = Array.from(new Set(
-    myEvents.flatMap(e => e.rawEndDate ? getDaysInRange(e.rawDate, e.rawEndDate) : [e.rawDate])
+    events.flatMap(e => e.end_date ? getDaysInRange(e.date, e.end_date) : [e.date])
   )).sort();
+
+  function getDaysInRange(start: string, end: string) {
+    try {
+      const days = [];
+      const curr = new Date(start);
+      const last = new Date(end);
+      while (curr <= last) {
+        days.push(curr.toISOString().split('T')[0]);
+        curr.setDate(curr.getDate() + 1);
+      }
+      return days;
+    } catch (e) {
+      return [start];
+    }
+  }
   
-  // Get today's date string
   const today = new Date().toISOString().split('T')[0];
 
-  // Default to today if it exists in data, otherwise the first date
-  const initialDate = availableDates.includes(today) ? today : (availableDates[0] || "");
-  const [selectedDate, setSelectedDate] = useState<string>(initialDate);
-
-  const filteredEvents = myEvents.filter(e => {
-    if (e.rawDate === selectedDate) return true;
-    if (e.rawEndDate && selectedDate >= e.rawDate && selectedDate <= e.rawEndDate) return true;
+  const filteredEvents = events.filter(e => {
+    if (e.date === selectedDate) return true;
+    if (e.end_date && selectedDate >= e.date && selectedDate <= e.end_date) return true;
     return false;
   });
 

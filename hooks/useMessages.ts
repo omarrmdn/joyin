@@ -37,65 +37,10 @@ export function useMessages() {
     const isFetchingRef = useRef(false);
 
     const fetchMessages = useCallback(async (isInitial = true) => {
-        // Mock Data for Testing UI
-        const mockMessages: DBMessage[] = [
-            {
-                id: "mock1",
-                event_id: null,
-                sender_id: "user_omar",
-                recipient_id: "mock-user",
-                message_type: 'general',
-                subject: null,
-                body: "Are we still meeting at the hackathon?",
-                event_link: null,
-                read: false,
-                created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-                read_at: null,
-                sender: {
-                    name: "Omar Ramadan",
-                    image_url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
-                }
-            },
-            {
-                id: "mock2",
-                event_id: "workshop-123",
-                sender_id: "user_sarah",
-                recipient_id: "mock-user",
-                message_type: 'general',
-                subject: null,
-                body: "Thanks for joining the UI/UX Masterclass! See you there.",
-                event_link: null,
-                read: true,
-                created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-                read_at: new Date().toISOString(),
-                sender: {
-                    name: "Sarah Jenkins",
-                    image_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
-                }
-            },
-            {
-                id: "mock3",
-                event_id: "event-456",
-                sender_id: "user_tech",
-                recipient_id: "mock-user",
-                message_type: 'event_published',
-                subject: null,
-                body: "Your early bird ticket is confirmed.",
-                event_link: null,
-                read: true,
-                created_at: new Date(Date.now() - 432000000).toISOString(), // 5 days ago
-                read_at: new Date().toISOString(),
-                sender: {
-                    name: "Tech Innovators Support",
-                    image_url: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop"
-                }
-            }
-        ];
-
         if (!user || isFetchingRef.current) {
             console.log('[useMessages] Skipping fetch: No user or already fetching');
             if (!user) {
-                setMessages(mockMessages);
+                setMessages([]);
                 setLoading(false);
             }
             return;

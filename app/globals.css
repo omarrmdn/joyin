@@ -189,6 +189,15 @@ button {
   background-color: rgba(255, 59, 48, 0.1) !important;
 }
 
+.user-avatar,
+.user-avatar-fallback {
+  border-radius: 50% !important;
+  overflow: hidden;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+
 .google-signin-btn {
   color: var(--primary) !important;
   font-weight: 600;
@@ -2933,13 +2942,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px;
+  padding: 10px 16px;
   border-radius: 12px;
   background: rgba(255, 59, 48, 0.1);
   border: 1px solid rgba(255, 59, 48, 0.2);
   color: var(--error);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 14px;
   transition: var(--transition-fast);
 }
 

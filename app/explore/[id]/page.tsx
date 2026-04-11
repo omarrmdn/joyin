@@ -1,5 +1,4 @@
 "use client";
-
 import { TopBar } from "@/components/TopBar";
 import { shareEvent } from "@/lib/share";
 import {
@@ -20,168 +19,56 @@ import {
   IoCheckmarkCircle,
   IoAlertCircleOutline
 } from "react-icons/io5";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 
 interface EventDetailsProps {
   params: Promise<{ id: string }>;
 }
 
-// Mock data (matching IDs in Home and MyEventsPage)
-const eventsData: Record<string, any> = {
-  "1": {
-    id: "1",
-    title: "Summer Music Festival 2026",
-    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=2070&auto=format&fit=crop",
-    location: "Central Park, NY",
-    date: "July 15, 2026",
-    endDate: "July 17, 2026",
-    time: "4:00 PM",
-    endTime: "11:00 PM",
-    price: "$45",
-    host: {
-      name: "NY Events",
-      avatar: "https://i.pravatar.cc/150?u=nyevents",
-      role: "Organizer"
-    },
-    description: "Join us for the biggest summer music festival of 2026! Featuring top artists from around the world. Get ready to experience amazing performances and enjoy a weekend full of music, food, and fun.",
-    attendees: 1240,
-    tags: ["Music", "Festival", "Summer"]
-  },
-  "2": {
-    id: "2",
-    title: "Tech Innovators Summit",
-    image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2012&auto=format&fit=crop",
-    location: "Convention Center",
-    date: "August 02, 2026",
-    endDate: "August 05, 2026",
-    time: "9:00 AM",
-    endTime: "5:00 PM",
-    price: "Free",
-    host: {
-      name: "Tech Hub Community",
-      avatar: "https://i.pravatar.cc/150?u=techhub",
-      role: "Community Organizer"
-    },
-    description: "Discover the latest in technology and innovation at the Tech Innovators Summit. Network with industry leaders, attend insightful talks, and explore new startups and cutting-edge products.",
-    attendees: 850,
-    tags: ["Tech", "Startups", "Networking"]
-  },
-  "3": {
-    id: "3",
-    title: "Gourmet Food Expo",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
-    location: "Downtown Plaza",
-    date: "September 12, 2026",
-    time: "10:00 AM",
-    endTime: "8:00 PM",
-    price: "$15",
-    host: {
-      name: "Culinary Arts",
-      avatar: "https://i.pravatar.cc/150?u=culinary",
-      role: "Organizer"
-    },
-    description: "Taste the finest dishes from top chefs at the Gourmet Food Expo. A paradise for food lovers, featuring live cooking demonstrations, exquisite tastings, and a wide variety of global cuisines.",
-    attendees: 420,
-    tags: ["Food", "Expo", "Gourmet"]
-  },
-  "4": {
-    id: "4",
-    title: "Art & Design Workshop",
-    image: "https://images.unsplash.com/photo-1460666819844-e2a4d7764ef5?q=80&w=2064&auto=format&fit=crop",
-    location: "Modern Art Gallery",
-    date: "October 05, 2026",
-    time: "1:00 PM",
-    endTime: "4:00 PM",
-    price: "$30",
-    host: {
-      name: "Creative Studios",
-      avatar: "https://i.pravatar.cc/150?u=studio",
-      role: "Design Agency"
-    },
-    description: "Enhance your creative skills in this interactive Art & Design Workshop. Suitable for all skill levels, you'll learn new techniques in painting, illustration, and digital design from experienced artists.",
-    attendees: 150,
-    tags: ["Art", "Design", "Workshop"]
-  },
-  "5": {
-    id: "5",
-    title: "International Film Festival",
-    image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop",
-    location: "Grand Theater",
-    date: "November 20, 2026",
-    endDate: "November 22, 2026",
-    time: "6:00 PM",
-    endTime: "11:00 PM",
-    price: "$25",
-    host: {
-      name: "Cinema World",
-      avatar: "https://i.pravatar.cc/150?u=cinema",
-      role: "Organizer"
-    },
-    description: "Experience the magic of cinema with acclaimed films from around the globe at the International Film Festival. Join filmmakers, actors, and movie enthusiasts for exclusive screenings and Q&A sessions.",
-    attendees: 2100,
-    tags: ["Film", "Festival", "Art"]
-  },
-  "6": {
-    id: "6",
-    title: "Global AI & Robotics Expo",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070&auto=format&fit=crop",
-    location: "Exhibition Hall, WA",
-    date: "Dec 10, 2026",
-    endDate: "Dec 25, 2026",
-    time: "9:00 AM",
-    endTime: "6:00 PM",
-    price: "$150",
-    host: {
-      name: "Tech Hub Community",
-      avatar: "https://i.pravatar.cc/150?u=techhub",
-      role: "Community Organizer"
-    },
-    description: "The Global AI & Robotics Expo is back! Special month-long exhibition showcasing futuristic technologies.",
-    attendees: 4500,
-    tags: ["Tech", "Robotics", "AI"]
-  },
-  "m1": {
-    id: "m1",
-    title: "Startup Weekend Hackathon",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
-    location: "Tech Hub Sandbox, 123 Innovation Way",
-    date: "Thursday, Dec 10, 2026",
-    endDate: "Saturday, Dec 12, 2026",
-    time: "9:00 AM",
-    endTime: "6:00 PM",
-    price: "Free",
-    host: {
-      name: "Tech Hub Community",
-      avatar: "https://i.pravatar.cc/150?u=techhub",
-      role: "Community Organizer"
-    },
-    description: "Get ready for 48 hours of pure innovation! Startup Weekend is an exciting event where developers, designers, and entrepreneurs come together to share ideas, form teams, and build startups from scratch.",
-    attendees: 124,
-    tags: ["Tech", "Networking", "Entrepreneurship"]
-  },
-  "m2": {
-    id: "m2",
-    title: "UI/UX Masterclass",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop",
-    location: "Creative Studios, Downtown",
-    date: "Tuesday, Dec 15, 2026",
-    time: "2:00 PM",
-    endTime: "5:00 PM",
-    price: "$150",
-    host: {
-      name: "Studio Design",
-      avatar: "https://i.pravatar.cc/150?u=studio",
-      role: "Design Agency"
-    },
-    description: "Master the art of user interface and user experience design in this intensive workshop. We'll cover everything from design principles and typography to prototyping and user testing.",
-    attendees: 45,
-    tags: ["Design", "Masterclass", "UX"]
-  }
-};
-
 export default function EventDetailsPage({ params }: EventDetailsProps) {
   const resolvedParams = use(params);
   const eventId = resolvedParams.id;
-  const event = eventsData[eventId] || eventsData["m1"]; // Fallback to m1 for demo
+  
+  const [event, setEvent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    async function fetchEvent() {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .single();
+        
+        if (data) {
+          setEvent(data);
+        }
+      } catch (error) {
+        console.error("Error fetching event:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEvent();
+  }, [eventId]);
+
+  const activeEvent = event || {
+    title: "Loading...",
+    image: "",
+    location: "Loading...",
+    date: "...",
+    price: "0",
+    description: "...",
+    host: { name: "...", avatar: "" },
+    tags: [],
+    attendees_count: 0
+  };
+
+  const currentEvent = activeEvent;
 
   // Join Logic State
   const [isJoined, setIsJoined] = useState(false);
@@ -219,8 +106,8 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       }
     };
 
-    const newStart = parseWebDateTime(event.date, event.time);
-    const newEnd = parseWebDateTime(event.endDate || event.date, event.endTime || event.time);
+    const newStart = parseWebDateTime(currentEvent.date, currentEvent.time);
+    const newEnd = parseWebDateTime(currentEvent.endDate || currentEvent.date, currentEvent.endTime || currentEvent.time);
 
     if (!isNaN(newStart) && !isNaN(newEnd)) {
       const overlap = myJoinedEvents.find(je => {
@@ -288,7 +175,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-header-actions">
             <button 
               className="ed-action-icon-btn"
-              onClick={() => shareEvent({ id: event.id, title: event.title })}
+              onClick={() => shareEvent({ id: currentEvent.id, title: currentEvent.title })}
             >
               <IoShareSocialOutline size={20} />
             </button>
@@ -308,8 +195,8 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
               <Image 
-                src={event.image} 
-                alt={event.title} 
+                src={currentEvent.image_url || currentEvent.image || ""} 
+                alt={currentEvent.title} 
                 fill 
                 className="ed-hero-image"
                 priority
@@ -318,22 +205,22 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             </div>
 
             <div className="ed-info-body">
-              <h1 className="ed-title">{event.title}</h1>
+              <h1 className="ed-title">{currentEvent.title}</h1>
               
               <div className="ed-quick-host-info-row">
                 <div className="ed-quick-host-info">
                   <Image 
-                    src={event.host.avatar} 
-                    alt={event.host.name} 
+                    src={currentEvent.host?.avatar || "https://i.pravatar.cc/150"} 
+                    alt={currentEvent.host?.name || "Host"} 
                     width={32} 
                     height={32} 
                     className="ed-mini-host-avatar"
                   />
-                  <span className="ed-host-name-mini">{event.host.name}</span>
+                  <span className="ed-host-name-mini">{currentEvent.host?.name || "Organizer"}</span>
                 </div>
 
                 <div className="ed-attending-group-mini">
-                   <span className="ed-attending-text-mini">{event.attendees}+ attending</span>
+                   <span className="ed-attending-text-mini">{currentEvent.attendees_count || 0}+ attending</span>
                    <div className="ed-avatar-stack-mini">
                      {[1,2,3].map(i => (
                        <div key={i} className="ed-stack-avatar-box-mini">
@@ -350,14 +237,14 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
               </div>
 
               <div className="ed-tags-wrapper">
-                {event.tags.map((tag: string) => (
+                {currentEvent.tags?.map((tag: string) => (
                   <span key={tag} className="ed-pill-tag">{tag}</span>
                 ))}
               </div>
 
               <div className="ed-section">
                 <h2 className="ed-section-title">About the event</h2>
-                <p className="ed-description">{event.description}</p>
+                <p className="ed-description">{currentEvent.description}</p>
               </div>
             </div>
           </div>
@@ -366,8 +253,10 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-side-column">
             <div className="ed-ticket-card glass-lux">
               <div className="ed-price-row-lux">
-                <span className="ed-price-value-lux">{event.price}</span>
-                {event.price.toLowerCase() === "free" && (
+                <span className="ed-price-value-lux">
+                  {currentEvent.price === 0 || currentEvent.price === "Free" ? "Free" : `${currentEvent.price} EGP`}
+                </span>
+                {String(currentEvent.price).toLowerCase() === "free" && (
                   <div className="ed-free-notice">
                     <IoAlertCircleOutline size={22} className="ed-free-icon" />
                     <p className="ed-free-notice-text">
@@ -392,7 +281,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">Date</span>
                     <span className="ed-detail-value">
-                      {event.endDate ? `${event.date} - ${event.endDate}` : event.date}
+                      {currentEvent.end_date ? `${currentEvent.date} - ${currentEvent.end_date}` : currentEvent.date}
                     </span>
                   </div>
                 </div>
@@ -404,7 +293,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">Time</span>
                     <span className="ed-detail-value">
-                      {event.endTime ? `${event.time} - ${event.endTime}` : event.time}
+                      {currentEvent.end_time ? `${currentEvent.start_time || currentEvent.time} - ${currentEvent.end_time}` : (currentEvent.start_time || currentEvent.time)}
                     </span>
                   </div>
                 </div>
@@ -415,7 +304,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   </div>
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">Location</span>
-                    <span className="ed-detail-value">{event.location}</span>
+                    <span className="ed-detail-value">{currentEvent.location}</span>
                   </div>
                 </div>
               </div>

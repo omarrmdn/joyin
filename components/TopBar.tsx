@@ -25,11 +25,6 @@ export function TopBar() {
       </div>
 
       <div className="topbar-inner">
-        {/* Left: Logo (Desktop uses Sidebar, mobile uses the row above) */}
-        <Link href="/" className="topbar-logo-link desktop-only">
-          <TopbarLogo className="topbar-logo-svg" />
-        </Link>
-
         {/* Center: Search (Desktop & Mobile styled separately in CSS) */}
         <div className="topbar-search">
           <IoSearchOutline size={20} className="search-icon" />
@@ -38,7 +33,26 @@ export function TopBar() {
             placeholder="Search events..."
             className="search-input"
           />
-          <button className="location-btn" aria-label="Near me">
+          <button 
+            className="location-btn" 
+            aria-label="Near me"
+            onClick={() => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    const { latitude, longitude } = position.coords;
+                    alert(`Location detected: ${latitude}, ${longitude}. Search updated.`);
+                    // In a real app, we would use these coords to filter events.
+                  },
+                  (error) => {
+                    alert("Error detecting location: " + error.message);
+                  }
+                );
+              } else {
+                alert("Geolocation is not supported by this browser.");
+              }
+            }}
+          >
             <IoLocationOutline size={18} />
           </button>
         </div>

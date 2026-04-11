@@ -53,7 +53,7 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         {user && (
-          <>
+          <Link href="/profile" className="user-profile-link">
             <div className="user-profile-container">
               {user.user_metadata?.avatar_url ? (
                 <Image
@@ -74,12 +74,7 @@ export function Sidebar() {
                 </span>
               </div>
             </div>
-            
-            <button onClick={() => signOut()} className="nav-item logout-btn">
-              <IoLogOutOutline size={24} className="nav-item-icon" />
-              <span className="nav-label">Logout</span>
-            </button>
-          </>
+          </Link>
         )}
       </div>
 
