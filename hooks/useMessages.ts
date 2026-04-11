@@ -201,14 +201,19 @@ export function useMessages() {
     }, [authLoading, fetchMessages, user]);
 
     const sendMessage = async (message: Partial<DBMessage>) => {
+        if (!user) throw new Error("User must be logged in to send messages");
         try {
             const { data, error: sendError } = await supabase
                 .from('messages')
                 .insert({
-                    ...message,
-                    sender_id: user?.id,
+                    body: message.body || '',
+                    event_id: message.event_id || '',
+                    message_type: message.message_type || 'general',
+                    recipient_id: message.recipient_id || '',
+                    subject: message.subject || null,
+                    sender_id: user.id,
                     created_at: new Date().toISOString(),
-                })
+                } as any)
                 .select(`
                     *,
                     sender:users!messages_sender_id_fkey (name, image_url),
