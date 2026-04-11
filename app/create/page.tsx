@@ -154,7 +154,7 @@ export default function CreateEventPage() {
           location: eventType === 'onsite' ? location : null,
           latitude: eventType === 'onsite' ? selectedLocationCoords?.latitude : null,
           longitude: eventType === 'onsite' ? selectedLocationCoords?.longitude : null,
-          meeting_link: eventType === 'online' ? link : null,
+          link: eventType === 'online' ? link : null,
           date: startDate,
           time: startTime,
           end_date: endDate || null,
