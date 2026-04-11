@@ -97,7 +97,9 @@ export function SearchResult({ event, index }: SearchResultProps) {
           <div className="sr-info-row">
             <div className="sr-info-item">
               <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />
-              <span className="sr-info-text">{event.location}</span>
+              <span className="sr-info-text">
+                {event.location?.toLowerCase() === "online" ? t.online : event.location}
+              </span>
             </div>
             <div className="sr-info-item">
               <IoCalendarSharp size={14} className="sr-icon" color="var(--accent)" />
@@ -109,7 +111,9 @@ export function SearchResult({ event, index }: SearchResultProps) {
 
           <div className="sr-footer">
             <span className="sr-price">
-              {event.price === 0 || event.price === "Free" ? t.free : `${event.price} EGP`}
+              {event.price === 0 || String(event.price).toLowerCase() === "free" 
+                ? t.free 
+                : `${typeof event.price === 'number' ? Math.abs(event.price) : event.price} ${t.egp}`}
             </span>
             
             {event.status === 'canceled' && (

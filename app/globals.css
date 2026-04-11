@@ -54,6 +54,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+[dir="rtl"],
+[dir="rtl"] body {
+  font-family: var(--font-graphik-arabic), system-ui, -apple-system, sans-serif;
+}
+
 h1,
 h2,
 h3,
@@ -2413,7 +2418,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .ed-hero-image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 8;
+  aspect-ratio: 16 / 9;
   border-radius: 20px;
   overflow: hidden;
   margin-bottom: 24px;

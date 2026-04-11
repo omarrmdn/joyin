@@ -154,6 +154,13 @@ type TranslationKeys = {
   failedUpdateProfile: string;
   fileTooLarge: string;
   failedUploadImage: string;
+  
+  // Footer
+  privacy: string;
+  terms: string;
+  support: string;
+  builtWith: string;
+  egp: string;
 };
 
 const en: TranslationKeys = {
@@ -309,6 +316,11 @@ const en: TranslationKeys = {
   failedUpdateProfile: "Failed to update profile.",
   fileTooLarge: "File is too large. Maximum size is 5MB.",
   failedUploadImage: "Failed to upload image.",
+  privacy: "Privacy",
+  terms: "Terms",
+  support: "Support",
+  builtWith: "Built with",
+  egp: "EGP",
 };
 
 const arEG: TranslationKeys = {
@@ -464,6 +476,11 @@ const arEG: TranslationKeys = {
   failedUpdateProfile: "فشل تحديث الملف الشخصي.",
   fileTooLarge: "الملف كبير أوي. الحد الأقصى ٥ ميجابايت.",
   failedUploadImage: "فشل رفع الصورة.",
+  privacy: "الخصوصية",
+  terms: "الشروط",
+  support: "الدعم",
+  builtWith: "صُنع بـ",
+  egp: "ج.م",
 };
 
 const translations = {

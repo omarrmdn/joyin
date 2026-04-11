@@ -280,7 +280,9 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             <div className="ed-ticket-card glass-lux">
               <div className="ed-price-row-lux">
                 <span className="ed-price-value-lux">
-                  {currentEvent.price === 0 || currentEvent.price === "Free" ? t.free : `${currentEvent.price} EGP`}
+                  {currentEvent.price === 0 || String(currentEvent.price).toLowerCase() === "free" 
+                    ? t.free 
+                    : `${typeof currentEvent.price === 'number' ? Math.abs(currentEvent.price) : currentEvent.price} ${t.egp}`}
                 </span>
                 {String(currentEvent.price).toLowerCase() === "free" && (
                   <div className="ed-free-notice">
@@ -330,7 +332,9 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   </div>
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">{t.location}</span>
-                    <span className="ed-detail-value">{currentEvent.location}</span>
+                    <span className="ed-detail-value">
+                      {currentEvent.location?.toLowerCase() === "online" ? t.online : currentEvent.location}
+                    </span>
                   </div>
                 </div>
               </div>

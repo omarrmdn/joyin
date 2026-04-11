@@ -12,11 +12,11 @@ export function Footer() {
 
   return (
     <footer className="simple-footer">
-      <p>&copy; {new Date().getFullYear()} Joyin | Built with Next.js</p>
+      <p>&copy; {new Date().getFullYear()} Joyin | {t.builtWith} Next.js</p>
       <div className="footer-links">
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-        <a href="#">Support</a>
+        <a href="#">{t.privacy}</a>
+        <a href="#">{t.terms}</a>
+        <a href="#">{t.support}</a>
       </div>
     </footer>
   );

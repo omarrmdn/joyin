@@ -20,16 +20,35 @@ export default function Home() {
     async function fetchData() {
       setLoading(true);
       try {
+        // 1. Fetch ALL tags once to build a mapping for language syncing
+        const { data: allTagsData } = await supabase
+          .from('tags')
+          .select('name, tag_translations(language_code, name)');
+        
+        const tagMap: Record<string, string> = {};
+        const langCode = language === "ar-EG" ? "ar" : "en";
+        
+        if (allTagsData) {
+          allTagsData.forEach((tag: any) => {
+            const translation = tag.tag_translations?.find((t: any) => t.language_code === langCode);
+            const label = translation ? translation.name : tag.name;
+            // Map both directions to help with syncing
+            tagMap[tag.name] = label; 
+          });
+        }
 
-
-        // Fetch Events with Tag mapping and attendee count
+        // 2. Fetch Events with Tag mapping and attendee count
         const { data: eventsData } = await supabase
           .from('events')
           .select(`
             *,
             event_tags (
               tags (
-                name
+                name,
+                tag_translations (
+                  language_code,
+                  name
+                )
               )
             ),
             attendees (
@@ -39,20 +58,50 @@ export default function Home() {
           .order('date', { ascending: true });
         
         if (eventsData) {
-          // Transform event_tags into a flat string array and count attendees
+          // Transform event_tags into localized labels
           const mappedEvents = eventsData.map(event => ({
             ...event,
-            tags: event.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || [],
+            tags: event.event_tags?.map((et: any) => {
+              const tag = et.tags;
+              if (!tag) return null;
+              const tr = tag.tag_translations?.find((t: any) => t.language_code === langCode);
+              return tr ? tr.name : tag.name;
+            }).filter(Boolean) || [],
             attendees_count: event.attendees?.length || 0
           }));
           setEvents(mappedEvents);
 
-          const uniqueTags = new Set<string>();
+          const uniqueTagsLabels = new Set<string>();
           mappedEvents.forEach(event => {
-            event.tags.forEach((tag: string) => uniqueTags.add(tag));
+            event.tags.forEach((tag: string) => uniqueTagsLabels.add(tag));
           });
-          const sortedTags = Array.from(uniqueTags).sort();
+          const sortedTags = Array.from(uniqueTagsLabels).sort();
           setTags([t.all, t.nearMe, ...sortedTags]);
+
+          // SYNC ACTIVE TAG: General fix for ALL tags
+          setActiveTag(prev => {
+            if (prev === "All" || prev === "الكل") return t.all;
+            if (prev === "Near me" || prev === "قريب مني") return t.nearMe;
+            
+            // For database tags, we need to find the equivalent label in the new language
+            // Since we don't know the "previous" language easily here, we can try to find 
+            // the tag in the previous language and map it to its ID, then back to the new label.
+            // But a simpler way since tags are unique: check if the 'prev' is a key or value in our mapping
+            if (allTagsData) {
+              const tagObj = allTagsData.find((tag: any) => {
+                const enName = tag.name;
+                const arName = tag.tag_translations?.find((t: any) => t.language_code === "ar")?.name;
+                return prev === enName || prev === arName;
+              });
+
+              if (tagObj) {
+                const newTr = tagObj.tag_translations?.find((t: any) => t.language_code === langCode);
+                return newTr ? newTr.name : tagObj.name;
+              }
+            }
+            
+            return prev;
+          });
         }
       } catch (error) {
         console.error("Error fetching data:", error);

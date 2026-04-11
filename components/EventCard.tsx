@@ -37,6 +37,9 @@ export function EventCard({
     shareEvent({ id, title });
   };
 
+  const displayLocation = location?.toLowerCase() === "online" ? t.online : location;
+  const displayPrice = typeof price === "number" ? Math.abs(price) : price;
+
   return (
     <Link href={`/explore/${id}`} className="event-card-link">
       <div className="event-card">
@@ -64,7 +67,7 @@ export function EventCard({
           <div className="event-card-info-row">
             <div className="event-card-info-item">
               <IoLocationSharp size={16} />
-              <span className="event-card-info-text">{location}</span>
+              <span className="event-card-info-text">{displayLocation}</span>
             </div>
             <div className="event-card-info-item">
               <IoCalendarSharp size={16} />
@@ -76,7 +79,9 @@ export function EventCard({
 
           <div className="event-card-footer">
             <div className="event-card-price">
-              {typeof price === "number" ? `${price} EGP` : price}
+              {displayPrice === 0 || String(displayPrice).toLowerCase() === "free" 
+                ? t.free 
+                : `${displayPrice} ${t.egp}`}
             </div>
             
             <div className="event-card-avatars-container">
@@ -91,8 +96,8 @@ export function EventCard({
                     <Image 
                       src={avatar}
                       alt={`${t.attending} ${i+1}`}
-                      width={28}
-                      height={28}
+                      width={30}
+                      height={30}
                       className="event-card-avatar"
                     />
                   </div>

@@ -270,12 +270,12 @@ export default function ProfilePage() {
           <div className="profile-stats-lux">
             <div className="stat-lux">
               <span className="stat-label-lux">{t.spent}</span>
-              <span className="stat-value-lux">EGP {stats.spent}</span>
+              <span className="stat-value-lux">{stats.spent} {t.egp}</span>
             </div>
             <div className="stat-divider-lux" />
             <div className="stat-lux">
               <span className="stat-label-lux">{t.earned}</span>
-              <span className="stat-value-lux">EGP {stats.earned}</span>
+              <span className="stat-value-lux">{stats.earned} {t.egp}</span>
             </div>
           </div>
         </header>
@@ -406,7 +406,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="currency-options">
                     <div className="currency-box active">
-                      <span className="box-text">EGP</span>
+                      <span className="box-text">{t.egp}</span>
                     </div>
                   </div>
                 </div>
