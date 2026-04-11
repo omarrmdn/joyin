@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "./supabase";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -13,12 +13,17 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+interface CredentialResponse {
+  credential: string;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const initializationStarted = useRef(false);
 
   const syncUser = useCallback(async (user: User | null) => {
     if (!user) return;
@@ -54,7 +59,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Initialize Google Identity Services
+    const initializeGis = () => {
+      if (typeof window !== "undefined" && window.google?.accounts?.id && !initializationStarted.current) {
+        initializationStarted.current = true;
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          callback: async (response: CredentialResponse) => {
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: "google",
+              token: response.credential,
+            });
+            if (error) console.error("Error signing in with Google ID Token:", error);
+          },
+          use_fedcm_for_prompt: true,
+        });
+      } else if (typeof window !== "undefined" && !window.google?.accounts?.id) {
+        // Check if script is already in document to avoid double loading
+        if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) return;
+
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeGis;
+        document.head.appendChild(script);
+      }
+    };
+
+    initializeGis();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [syncUser]);
 
   const signInWithGoogle = useCallback(async () => {

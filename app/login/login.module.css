@@ -119,32 +119,13 @@
   margin-bottom: 32px;
 }
 
-.googleAuthButton {
+.googleAuthButtonWrapper {
   width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  background: white;
-  color: #000;
-  font-weight: 700;
-  font-size: 16px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 12px;
-  transition: var(--transition-fast);
-  border: none;
-  cursor: pointer;
+  margin-top: 8px;
 }
 
-.googleAuthButton:hover {
-  background: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-.googleAuthButton:active {
-  transform: translateY(0);
-}
 
 .authCardFooter {
   margin-top: 40px;

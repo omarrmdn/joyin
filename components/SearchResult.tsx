@@ -5,6 +5,7 @@ import Image from "next/image";
 import { IoLocationSharp, IoCalendarSharp, IoCloseCircle, IoEllipsisVertical, IoShareSocialOutline, IoBan, IoGlobeOutline } from "react-icons/io5";
 import Link from "next/link";
 import { useLanguage } from "@/lib/language-context";
+import { shareEvent } from "@/lib/share";
 
 interface SearchResultProps {
   event: any;
@@ -86,6 +87,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
                       e.preventDefault();
                       e.stopPropagation();
                       setShowMenu(false);
+                      shareEvent({ id: event.id, title: event.title });
                     }}
                   >
                     <IoShareSocialOutline size={14} />
@@ -96,17 +98,17 @@ export function SearchResult({ event, index }: SearchResultProps) {
             </div>
           </div>
 
-          <div className="sr-info-row">
-            <div className="sr-info-item">
-              {(event.is_online || event.location?.toLowerCase() === "online") ? <IoGlobeOutline size={14} className="sr-icon" color="var(--accent)" /> : <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />}
-              <span className="sr-info-text">
-                {(event.is_online || event.location?.toLowerCase() === "online") ? t.online : event.location}
-              </span>
-            </div>
+          <div className="sr-info-row-flex">
             <div className="sr-info-item">
               <IoCalendarSharp size={14} className="sr-icon" color="var(--accent)" />
               <span className="sr-info-text">
                 {event.endDate ? `${event.date} - ${event.endDate}` : event.date}
+              </span>
+            </div>
+            <div className="sr-info-item">
+              {(event.is_online || event.location?.toLowerCase() === "online") ? <IoGlobeOutline size={14} className="sr-icon" color="var(--accent)" /> : <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />}
+              <span className="sr-info-text">
+                {(event.is_online || event.location?.toLowerCase() === "online") ? t.online : event.location}
               </span>
             </div>
           </div>

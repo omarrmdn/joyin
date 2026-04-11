@@ -1413,9 +1413,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .events-vertical-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
   margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  .events-vertical-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .events-vertical-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .events-vertical-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .search-result-item {
@@ -1480,6 +1498,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.sr-info-row-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .sr-info-item {
