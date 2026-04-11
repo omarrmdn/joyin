@@ -7,7 +7,6 @@ import { IoNotificationsOutline, IoLogInOutline, IoLocationOutline, IoSearchOutl
 import Image from "next/image";
 import Link from "next/link";
 import TopbarLogo from "./TopbarLogo";
-import GoogleSignInButton from "./GoogleSignInButton";
 
 interface TopBarProps {
   searchQuery?: string;
@@ -99,7 +98,10 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
               )}
             </Link>
           ) : (
-            <GoogleSignInButton />
+            <button onClick={() => signInWithGoogle()} className="signin-btn">
+              <IoLogInOutline size={18} />
+              <span>{t.signIn}</span>
+            </button>
           )}
         </div>
       </div>
