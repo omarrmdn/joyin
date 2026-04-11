@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/language-context";
+import Link from "next/link";
 
 export function Footer() {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export function Footer() {
       <p>&copy; {new Date().getFullYear()} Joyin | {t.builtWith} Next.js</p>
       <div className="footer-links">
         <a href="#">{t.privacy}</a>
-        <a href="#">{t.terms}</a>
+        <Link href="/terms">{t.terms}</Link>
         <a href="#">{t.support}</a>
       </div>
     </footer>

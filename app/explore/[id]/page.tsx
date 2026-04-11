@@ -34,7 +34,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
@@ -109,7 +109,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
   const handleJoin = async () => {
     if (!user) {
-      window.location.href = "/login";
+      signInWithGoogle();
       return;
     }
     if (isJoined || isJoining) return;

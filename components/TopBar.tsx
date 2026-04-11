@@ -15,7 +15,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: TopBarProps) {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
   const { unreadCount } = useNotifications();
   const { t } = useLanguage();
 
@@ -99,10 +99,10 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
               )}
             </Link>
           ) : (
-            <Link href="/login" className="signin-btn">
+            <button onClick={() => signInWithGoogle()} className="signin-btn">
               <IoLogInOutline size={18} />
               <span>{t.signIn}</span>
-            </Link>
+            </button>
           )}
         </div>
       </div>
