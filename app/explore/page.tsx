@@ -1,9 +1,12 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { EventCard } from "@/components/EventCard";
 import { IoSearchOutline, IoLocationSharp, IoOptionsOutline } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/lib/language-context";
 
 export default function ExplorePage() {
   const [events, setEvents] = useState<any[]>([]);
@@ -12,13 +15,14 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
         const { data: tagsData } = await supabase.from('tags').select('name').order('name');
-        if (tagsData) setTags(["All", ...tagsData.map(t => t.name)]);
+        if (tagsData) setTags([t.all, ...tagsData.map(t => t.name)]);
 
         const { data: eventsData } = await supabase.from('events').select(`
           *,
@@ -41,7 +45,7 @@ export default function ExplorePage() {
   }, []);
 
   const filteredEvents = events.filter(event => {
-    const matchesTag = activeTag === "All" || event.tags?.includes(activeTag);
+    const matchesTag = activeTag === t.all || event.tags?.includes(activeTag);
     const matchesSearch = !searchQuery || 
       event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -59,8 +63,8 @@ export default function ExplorePage() {
       
       <div className="explore-content-container">
         <header className="page-header">
-           <h1 className="explore-title">Explore Events</h1>
-           <p className="explore-subtitle">Find what&apos;s happening around the world or right next door.</p>
+           <h1 className="explore-title">{t.searchPlaceholder.split(',')[0]}</h1>
+           <p className="explore-subtitle">{t.searchPlaceholder}</p>
         </header>
 
         <div className="search-box-container glass-lux">
@@ -68,7 +72,7 @@ export default function ExplorePage() {
              <IoSearchOutline className="icon" />
              <input 
               type="text" 
-              placeholder="What are you interested in?" 
+              placeholder={t.searchPlaceholder} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
              />
@@ -78,12 +82,12 @@ export default function ExplorePage() {
              <IoLocationSharp className="icon" color="var(--accent)" />
              <input 
               type="text" 
-              placeholder="Anywhere" 
+              placeholder={t.location} 
               value={locationQuery}
               onChange={(e) => setLocationQuery(e.target.value)}
              />
            </div>
-           <button className="publish-btn search-submit-btn">Search</button>
+           <button className="publish-btn search-submit-btn">{t.searchPlaceholder.split(' ')[0]}</button>
         </div>
 
         <div className="category-chips">
@@ -100,16 +104,15 @@ export default function ExplorePage() {
 
         <section className="results-section">
            <div className="results-header">
-             <span>Found {filteredEvents.length} events</span>
+             <span>{filteredEvents.length} {t.attending}</span>
              <button className="filter-text-btn">
                 <IoOptionsOutline size={16} />
-                Sort & Filter
              </button>
            </div>
 
            <div className="feed-container">
                {loading ? (
-                 <p>Loading events...</p>
+                 <p>{t.loadingEvents}</p>
                ) : filteredEvents.length > 0 ? (
                  filteredEvents.map(event => (
                    <EventCard 
@@ -121,7 +124,7 @@ export default function ExplorePage() {
                    />
                  ))
                ) : (
-                 <p>No events found.</p>
+                 <p>{t.noEventsYet}</p>
                )}
            </div>
         </section>

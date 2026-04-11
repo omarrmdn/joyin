@@ -10,19 +10,21 @@ import {
   IoPerson, IoPersonOutline
 } from "react-icons/io5";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import Image from "next/image";
-
-const tabs = [
-  { href: "/", label: "Home", iconFilled: IoHome, iconOutline: IoHomeOutline },
-  { href: "/events", label: "My events", iconFilled: IoCalendar, iconOutline: IoCalendarOutline },
-  { href: "/create", isAdd: true },
-  { href: "/messages", label: "Messages", iconFilled: IoChatbubbleEllipses, iconOutline: IoChatbubbleEllipsesOutline },
-  { href: "/profile", label: "You", iconFilled: IoPerson, iconOutline: IoPersonOutline },
-];
 
 export function BottomTabBar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useLanguage();
+
+  const tabs = [
+    { href: "/", label: t.home, iconFilled: IoHome, iconOutline: IoHomeOutline },
+    { href: "/events", label: t.myEvents, iconFilled: IoCalendar, iconOutline: IoCalendarOutline },
+    { href: "/create", isAdd: true },
+    { href: "/messages", label: t.messages, iconFilled: IoChatbubbleEllipses, iconOutline: IoChatbubbleEllipsesOutline },
+    { href: "/profile", label: t.you, iconFilled: IoPerson, iconOutline: IoPersonOutline },
+  ];
 
   return (
     <nav className="bottom-tab-bar">
@@ -31,7 +33,7 @@ export function BottomTabBar() {
 
         if (tab.isAdd) {
           return (
-            <Link key="add" href={tab.href} className="tab-item-add" aria-label="Create Event">
+            <Link key="add" href={tab.href} className="tab-item-add" aria-label={t.createEvent}>
               <IoAdd size={32} />
             </Link>
           );
@@ -47,7 +49,7 @@ export function BottomTabBar() {
                 width: 24, height: 24, borderRadius: "50%", overflow: "hidden", 
                 border: isActive ? "1px solid var(--primary)" : "1px solid var(--gray)"
               }}>
-                <Image src={user.user_metadata.avatar_url} alt="Profile" width={24} height={24} style={{objectFit: "cover"}} />
+                <Image src={user.user_metadata.avatar_url} alt={t.profile} width={24} height={24} style={{objectFit: "cover"}} />
               </div>
               <span className="tab-item-label">{tab.label}</span>
             </Link>

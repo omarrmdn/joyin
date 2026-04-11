@@ -1,6 +1,7 @@
 "use client";
 import { TopBar } from "@/components/TopBar";
 import { shareEvent } from "@/lib/share";
+import { useLanguage } from "@/lib/language-context";
 import {
   IoCalendarSharp,
   IoChevronBack,
@@ -33,6 +34,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchEvent() {
@@ -57,9 +59,9 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   }, [eventId]);
 
   const activeEvent = event || {
-    title: "Loading...",
+    title: t.loading,
     image: "",
-    location: "Loading...",
+    location: t.loading,
     date: "...",
     price: "0",
     description: "...",
@@ -118,7 +120,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       });
 
       if (overlap) {
-        alert(`Overlap Conflict: You are already attending "${overlap.title}" at this time.`);
+        alert(`${t.overlapConflict} "${overlap.title}".`);
         setIsJoining(false);
         return;
       }
@@ -138,7 +140,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (reportImages.length + files.length > 3) {
-      alert("Maximum 3 images allowed");
+      alert(t.maxImagesAllowed);
       return;
     }
     const newImages = files.map(f => URL.createObjectURL(f));
@@ -170,7 +172,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
         <div className="ed-header-nav">
           <Link href="/" className="ed-back-btn">
             <IoChevronBack size={24} className="rtl-flip" />
-            <span>Back</span>
+            <span>{t.back}</span>
           </Link>
           <div className="ed-header-actions">
             <button 
@@ -183,7 +185,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             <button 
               className="ed-action-icon-btn"
               onClick={() => setIsReportModalOpen(true)}
-              title="Report Event"
+              title={t.reportEvent}
             >
               <IoFlagOutline size={20} />
             </button>
@@ -211,22 +213,22 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                 <div className="ed-quick-host-info">
                   <Image 
                     src={currentEvent.host?.avatar || "https://i.pravatar.cc/150"} 
-                    alt={currentEvent.host?.name || "Host"} 
+                    alt={currentEvent.host?.name || t.organizer} 
                     width={32} 
                     height={32} 
                     className="ed-mini-host-avatar"
                   />
-                  <span className="ed-host-name-mini">{currentEvent.host?.name || "Organizer"}</span>
+                  <span className="ed-host-name-mini">{currentEvent.host?.name || t.organizer}</span>
                 </div>
 
                 <div className="ed-attending-group-mini">
-                   <span className="ed-attending-text-mini">{currentEvent.attendees_count || 0}+ attending</span>
+                   <span className="ed-attending-text-mini">{currentEvent.attendees_count || 0}+ {t.attending}</span>
                    <div className="ed-avatar-stack-mini">
                      {[1,2,3].map(i => (
                        <div key={i} className="ed-stack-avatar-box-mini">
                          <Image 
                            src={`https://i.pravatar.cc/100?u=${i}`} 
-                           alt="Attendee" 
+                           alt={t.attending} 
                            width={28} 
                            height={28} 
                          />
@@ -243,7 +245,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
               </div>
 
               <div className="ed-section">
-                <h2 className="ed-section-title">About the event</h2>
+                <h2 className="ed-section-title">{t.aboutTheEvent}</h2>
                 <p className="ed-description">{currentEvent.description}</p>
               </div>
             </div>
@@ -254,20 +256,20 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             <div className="ed-ticket-card glass-lux">
               <div className="ed-price-row-lux">
                 <span className="ed-price-value-lux">
-                  {currentEvent.price === 0 || currentEvent.price === "Free" ? "Free" : `${currentEvent.price} EGP`}
+                  {currentEvent.price === 0 || currentEvent.price === "Free" ? t.free : `${currentEvent.price} EGP`}
                 </span>
                 {String(currentEvent.price).toLowerCase() === "free" && (
                   <div className="ed-free-notice">
                     <IoAlertCircleOutline size={22} className="ed-free-icon" />
                     <p className="ed-free-notice-text">
-                      This event is free. If the organizer asks for money, please{" "}
+                      {t.freeEventNotice}{" "}
                       <button 
                         className="ed-report-link"
                         onClick={() => setIsReportModalOpen(true)}
                       >
-                        report it
+                        {t.reportIt}
                       </button>{" "}
-                      to remove the event.
+                      {t.toRemoveEvent}
                     </p>
                   </div>
                 )}
@@ -279,7 +281,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                     <IoCalendarSharp size={20} />
                   </div>
                   <div className="ed-detail-text">
-                    <span className="ed-detail-title">Date</span>
+                    <span className="ed-detail-title">{t.date}</span>
                     <span className="ed-detail-value">
                       {currentEvent.end_date ? `${currentEvent.date} - ${currentEvent.end_date}` : currentEvent.date}
                     </span>
@@ -291,7 +293,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                     <IoTimeOutline size={20} />
                   </div>
                   <div className="ed-detail-text">
-                    <span className="ed-detail-title">Time</span>
+                    <span className="ed-detail-title">{t.time}</span>
                     <span className="ed-detail-value">
                       {currentEvent.end_time ? `${currentEvent.start_time || currentEvent.time} - ${currentEvent.end_time}` : (currentEvent.start_time || currentEvent.time)}
                     </span>
@@ -303,7 +305,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                     <IoLocationSharp size={20} />
                   </div>
                   <div className="ed-detail-text">
-                    <span className="ed-detail-title">Location</span>
+                    <span className="ed-detail-title">{t.location}</span>
                     <span className="ed-detail-value">{currentEvent.location}</span>
                   </div>
                 </div>
@@ -314,10 +316,10 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                 onClick={handleJoin}
                 disabled={isJoining || isJoined}
               >
-                {isJoining ? "Joining..." : isJoined ? "Joined" : "Join"}
+                {isJoining ? t.joining : isJoined ? t.joined : t.join}
               </button>
               
-              <p className="ed-hint">Secure your spot before it's full!</p>
+              <p className="ed-hint">{t.secureSpot}</p>
               
 
             </div>
@@ -335,26 +337,26 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             {reportSuccess ? (
               <div className="report-success-state">
                 <IoCheckmarkCircle size={60} className="report-success-icon" />
-                <h2 className="report-modal-title">Report Submitted</h2>
-                <p className="report-modal-subtitle">Thank you. Our team will review this event shortly.</p>
+                <h2 className="report-modal-title">{t.reportSubmitted}</h2>
+                <p className="report-modal-subtitle">{t.reportThankYou}</p>
               </div>
             ) : (
               <>
-                <h2 className="report-modal-title">Report a Problem</h2>
-                <p className="report-modal-subtitle">Help us understand what's wrong with this event.</p>
+                <h2 className="report-modal-title">{t.reportProblem}</h2>
+                <p className="report-modal-subtitle">{t.reportSubtitle}</p>
 
                 <div className="report-form-group">
-                  <label className="report-modal-label">What is the issue?</label>
+                  <label className="report-modal-label">{t.whatIsTheIssue}</label>
                   <textarea 
                     className="report-modal-textarea"
-                    placeholder="Describe the problem in detail (e.g. fake event, inappropriate content, etc.)"
+                    placeholder={t.reportPlaceholder}
                     value={reportDescription}
                     onChange={(e) => setReportDescription(e.target.value)}
                   />
                 </div>
 
                 <div className="report-form-group">
-                  <label className="report-modal-label">Screenshots (Optional, up to 3)</label>
+                  <label className="report-modal-label">{t.screenshotsOptional}</label>
                   <div className="report-images-row">
                     {reportImages.map((img, idx) => (
                       <div key={idx} className="report-img-prev">
@@ -387,7 +389,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   disabled={!reportDescription.trim() || isSubmittingReport}
                   onClick={handleReportSubmit}
                 >
-                  {isSubmittingReport ? "Submitting..." : "Send Report"}
+                  {isSubmittingReport ? t.submitting : t.sendReport}
                 </button>
               </>
             )}

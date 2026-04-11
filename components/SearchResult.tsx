@@ -1,7 +1,10 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { IoLocationSharp, IoCalendarSharp, IoCloseCircle, IoEllipsisVertical, IoShareSocialOutline, IoBan } from "react-icons/io5";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
 
 interface SearchResultProps {
   event: any;
@@ -11,6 +14,7 @@ interface SearchResultProps {
 export function SearchResult({ event, index }: SearchResultProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -72,7 +76,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
                     }}
                   >
                     <IoBan size={14} />
-                    <span>Cancel</span>
+                    <span>{t.cancel}</span>
                   </button>
                   <button 
                     className="sr-dropdown-item"
@@ -83,7 +87,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
                     }}
                   >
                     <IoShareSocialOutline size={14} />
-                    <span>Share</span>
+                    <span>{t.share}</span>
                   </button>
                 </div>
               )}
@@ -105,13 +109,13 @@ export function SearchResult({ event, index }: SearchResultProps) {
 
           <div className="sr-footer">
             <span className="sr-price">
-              {event.price === 0 || event.price === "Free" ? "Free" : `${event.price} EGP`}
+              {event.price === 0 || event.price === "Free" ? t.free : `${event.price} EGP`}
             </span>
             
             {event.status === 'canceled' && (
               <div className="sr-badge sr-badge-canceled">
                 <IoCloseCircle size={12} />
-                <span>Canceled</span>
+                <span>{t.canceled}</span>
               </div>
             )}
           </div>

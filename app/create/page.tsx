@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { TopBar } from "@/components/TopBar";
+import { useLanguage } from "@/lib/language-context";
 import { 
   IoImageOutline, 
   IoLocationSharp, 
@@ -24,6 +25,7 @@ type EventType = "onsite" | "online";
 type Gender = "all" | "male" | "female";
 
 export default function CreateEventPage() {
+  const { t } = useLanguage();
   const [tagSearch, setTagSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
@@ -43,7 +45,7 @@ export default function CreateEventPage() {
   const [endTime, setEndTime] = useState("");
   const [capacity, setCapacity] = useState("");
   const [price, setPrice] = useState("");
-  const [gender, setGender] = useState<Gender | "">(""); 
+  const [gender, setGender] = useState<Gender | "">("")  ;
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -113,7 +115,7 @@ export default function CreateEventPage() {
     try {
       // Basic validation
       if (!title || !description || !startDate || !startTime || (eventType === 'onsite' && !location) || (eventType === 'online' && !link) || !gender || !image || selectedTags.length === 0) {
-        setFormError("Please fill in all fields (Title, Image, Description, Date/Time, Location, Gender, and Tags) to publish your event.");
+        setFormError(t.formValidationError);
         setIsPublishing(false);
         return;
       }
@@ -178,7 +180,7 @@ export default function CreateEventPage() {
         }
       }
 
-      alert("Event published successfully!");
+      alert(t.eventPublished);
       window.location.href = "/"; // Redirect to home
     } catch (error: any) {
       console.error("Error publishing event:", error);
@@ -211,7 +213,7 @@ export default function CreateEventPage() {
             {/* Left Column: Media, Description & Metadata */}
             <div className="form-column column-left">
               <header className="create-header">
-                <h1>Create Event</h1>
+                <h1>{t.createEvent}</h1>
               </header>
               <div className="form-group">
                 <div 
@@ -223,8 +225,8 @@ export default function CreateEventPage() {
                   ) : (
                     <>
                       <IoImageOutline size={48} className="upload-icon" />
-                      <span>Upload Event Cover</span>
-                      <p className="upload-hint">16:9 ratio recommended (Max 5MB)</p>
+                      <span>{t.uploadEventCover}</span>
+                      <p className="upload-hint">{t.uploadHint}</p>
                     </>
                   )}
                 </div>
@@ -238,15 +240,15 @@ export default function CreateEventPage() {
               </div>
 
               <div className="form-group">
-                <label className="section-label">Description</label>
+                <label className="section-label">{t.description}</label>
                 <textarea 
-                  placeholder="Tell your attendees what to expect... Describe the vibe, the program, and any special requirements." 
+                  placeholder={t.descriptionPlaceholder} 
                   rows={8}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 ></textarea>
                 <p className="upload-hint" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                  <IoInformationCircleOutline size={14} /> Tip: Be detailed to attract more attendees.
+                  <IoInformationCircleOutline size={14} /> {t.descriptionTip}
                 </p>
               </div>
 
@@ -255,10 +257,10 @@ export default function CreateEventPage() {
             {/* Right Column: Details & Logistics */}
             <div className="form-column column-right">
               <div className="form-group">
-                <label><IoPricetagOutline size={18} /> Event Title</label>
+                <label><IoPricetagOutline size={18} /> {t.eventTitle}</label>
                 <input 
                   type="text" 
-                  placeholder="e.g., Summer Music Festival" 
+                  placeholder={t.eventTitlePlaceholder} 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -266,29 +268,29 @@ export default function CreateEventPage() {
               </div>
 
               <div className="form-group">
-                <label><IoGlobeOutline size={18} /> Event Type</label>
+                <label><IoGlobeOutline size={18} /> {t.eventType}</label>
                 <div className="type-selector">
                   <div 
                     className={`type-button ${eventType === 'onsite' ? 'active' : ''}`}
                     onClick={() => setEventType('onsite')}
                   >
-                    <IoLocationSharp size={18} /> Onsite
+                    <IoLocationSharp size={18} /> {t.onsite}
                   </div>
                   <div 
                     className={`type-button ${eventType === 'online' ? 'active' : ''}`}
                     onClick={() => setEventType('online')}
                   >
-                    <IoGlobeOutline size={18} /> Online
+                    <IoGlobeOutline size={18} /> {t.online}
                   </div>
                 </div>
               </div>
 
               {eventType === 'onsite' ? (
                 <div className="form-group">
-                  <label><IoLocationSharp size={18} color="var(--accent)" /> Location</label>
+                  <label><IoLocationSharp size={18} color="var(--accent)" /> {t.location}</label>
                   <input 
                     type="text" 
-                    placeholder="Search for a venue or address" 
+                    placeholder={t.locationPlaceholder} 
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     required
@@ -296,10 +298,10 @@ export default function CreateEventPage() {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label><IoLinkOutline size={18} /> Meeting Link</label>
+                  <label><IoLinkOutline size={18} /> {t.meetingLink}</label>
                   <input 
                     type="url" 
-                    placeholder="https://zoom.us/j/..." 
+                    placeholder={t.meetingLinkPlaceholder} 
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
                     required
@@ -309,7 +311,7 @@ export default function CreateEventPage() {
 
               <div className="form-row">
                 <div className="form-group half">
-                  <label><IoCalendarSharp size={18} color="var(--accent)" /> Start Date</label>
+                  <label><IoCalendarSharp size={18} color="var(--accent)" /> {t.startDate}</label>
                   <input 
                     type="date" 
                     value={startDate}
@@ -318,7 +320,7 @@ export default function CreateEventPage() {
                   />
                 </div>
                 <div className="form-group half">
-                  <label><IoTimeOutline size={18}/> Start Time</label>
+                  <label><IoTimeOutline size={18}/> {t.startTime}</label>
                   <input 
                     type="time" 
                     value={startTime}
@@ -330,7 +332,7 @@ export default function CreateEventPage() {
 
               <div className="form-row">
               <div className="form-group half">
-                <label><IoCalendarSharp size={18} /> End Date (Optional)</label>
+                <label><IoCalendarSharp size={18} /> {t.endDateOptional}</label>
                 <input 
                   type="date" 
                   value={endDate}
@@ -338,7 +340,7 @@ export default function CreateEventPage() {
                 />
               </div>
               <div className="form-group half">
-                <label><IoTimeOutline size={18}/> End Time (Optional)</label>
+                <label><IoTimeOutline size={18}/> {t.endTimeOptional}</label>
                 <input 
                   type="time" 
                   value={endTime}
@@ -349,19 +351,19 @@ export default function CreateEventPage() {
 
             <div className="form-row">
               <div className="form-group half">
-                <label><IoPeopleOutline size={18} /> Capacity</label>
+                <label><IoPeopleOutline size={18} /> {t.capacity}</label>
                 <input 
                   type="number" 
-                  placeholder="Max attendees" 
+                  placeholder={t.maxAttendees} 
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                 />
               </div>
               <div className="form-group half">
-                <label><IoCashOutline size={18} /> Price (EGP)</label>
+                <label><IoCashOutline size={18} /> {t.priceEGP}</label>
                 <input 
                   type="number" 
-                  placeholder="Enter 0 for free" 
+                  placeholder={t.enterZeroForFree} 
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                 />
@@ -369,13 +371,13 @@ export default function CreateEventPage() {
             </div>
 
             <div className="form-group" ref={dropdownRef}>
-              <label><IoPricetagOutline size={18}/> Tags</label>
+              <label><IoPricetagOutline size={18}/> {t.tags}</label>
               <div className="mobile-search-dropdown-container">
                 <div className="search-input-wrapper-lux">
                   <IoSearchOutline size={18} className="search-icon" />
                   <input 
                     type="text" 
-                    placeholder="Search and select tags..." 
+                    placeholder={t.searchTags} 
                     value={tagSearch}
                     onChange={(e) => {
                       setTagSearch(e.target.value);
@@ -401,7 +403,7 @@ export default function CreateEventPage() {
                         </div>
                       ))
                     ) : (
-                      <div className="no-results">No tags found for "{tagSearch}"</div>
+                      <div className="no-results">{t.noTagsFound} "{tagSearch}"</div>
                     )}
                   </div>
                 )}
@@ -428,25 +430,25 @@ export default function CreateEventPage() {
 
           <div className="form-footer-content">
             <div className="form-group">
-              <label className="section-label">Target Audience</label>
+              <label className="section-label">{t.targetAudience}</label>
               <div className="gender-selector">
                 <div 
                   className={`gender-option ${gender === 'all' ? 'active' : ''}`}
                   onClick={() => setGender('all')}
                 >
-                  Everyone
+                  {t.everyone}
                 </div>
                 <div 
                   className={`gender-option ${gender === 'male' ? 'active' : ''}`}
                   onClick={() => setGender('male')}
                 >
-                  Males Only
+                  {t.malesOnly}
                 </div>
                 <div 
                   className={`gender-option ${gender === 'female' ? 'active' : ''}`}
                   onClick={() => setGender('female')}
                 >
-                  Females Only
+                  {t.femalesOnly}
                 </div>
               </div>
             </div>
@@ -463,7 +465,7 @@ export default function CreateEventPage() {
                 disabled={isPublishing}
                 type="submit"
               >
-                {isPublishing ? "Publishing..." : "Publish Event"}
+                {isPublishing ? t.publishing : t.publishEvent}
               </button>
             </div>
           </div>

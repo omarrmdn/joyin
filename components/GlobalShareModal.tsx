@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { IoCloseOutline, IoCopyOutline, IoCheckmarkOutline } from "react-icons/io5";
 import { subscribeShareModal, closeShareModal } from "@/lib/share";
+import { useLanguage } from "@/lib/language-context";
 
 export function GlobalShareModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [eventData, setEventData] = useState<{ id: string; title: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const unsubscribe = subscribeShareModal((state) => {
@@ -23,7 +25,7 @@ export function GlobalShareModal() {
   if (!isOpen || !eventData) return null;
 
   const eventUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/explore/${eventData.id}`;
-  const message = `I’m going to this 🎟️✨\n**${eventData.title}**\nJoin me on Joyin 📍🔥\n\n${eventUrl}`;
+  const message = `I'm going to this 🎟️✨\n**${eventData.title}**\nJoin me on Joyin 📍🔥\n\n${eventUrl}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message);
@@ -35,7 +37,7 @@ export function GlobalShareModal() {
     <div className="share-modal-overlay" onClick={closeShareModal}>
       <div className="share-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="share-modal-header">
-          <h3 className="share-modal-title">Share</h3>
+          <h3 className="share-modal-title">{t.shareTitle}</h3>
           <button onClick={closeShareModal} className="share-modal-close">
             <IoCloseOutline size={24} />
           </button>

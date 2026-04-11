@@ -51,17 +51,17 @@ const TikTokIcon = ({ size = 24 }: { size?: number }) => (
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [userInterests, setUserInterests] = useState(["Music", "Tech", "Food"]);
 
   const menuItems = [
-    { icon: IoSettingsOutline, label: "Account Settings", id: "account" },
-    { icon: IoBugOutline, label: "Report a Problem", id: "bug" },
+    { icon: IoSettingsOutline, label: t.accountSettings, id: "account" },
+    { icon: IoBugOutline, label: t.reportAProblem, id: "bug" },
   ];
 
   const [activeTab, setActiveTab] = useState("account");
   const [isEditingInterests, setIsEditingInterests] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { language, setLanguage } = useLanguage();
   const [stats, setStats] = useState({ spent: 0, earned: 0 });
   
   // Bug Report State
@@ -123,7 +123,7 @@ export default function ProfilePage() {
       window.location.reload();
     } catch (error) {
        console.error("Error updating profile:", error);
-       alert("Failed to update profile.");
+       alert(t.failedUpdateProfile);
     } finally {
       setIsUpdating(false);
     }
@@ -134,7 +134,7 @@ export default function ProfilePage() {
     
     const file = e.target.files[0];
     if (file.size > 5 * 1024 * 1024) {
-      alert("File is too large. Maximum size is 5MB.");
+      alert(t.fileTooLarge);
       return;
     }
     
@@ -172,7 +172,7 @@ export default function ProfilePage() {
       window.location.reload();
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image.");
+      alert(t.failedUploadImage);
     } finally {
       setIsUpdating(false);
     }
@@ -180,7 +180,7 @@ export default function ProfilePage() {
 
   const languages = [
     { id: "en", name: "English" },
-    { id: "ar-EG", name: "Egyptian Arabic" }
+    { id: "ar-EG", name: "العربية (مصري)" }
   ];
 
   const filteredInterests = useMemo(() => {
@@ -214,7 +214,7 @@ export default function ProfilePage() {
               {user?.user_metadata?.avatar_url ? (
                 <Image 
                   src={user.user_metadata.avatar_url} 
-                  alt="Profile" 
+                  alt={t.profile} 
                   width={120} 
                   height={120} 
                   className="profile-avatar-lux"
@@ -240,12 +240,12 @@ export default function ProfilePage() {
                     className="name-input-lux"
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
-                    placeholder="Your Name"
+                    placeholder={t.yourName}
                     autoFocus
                   />
                 ) : (
                   <h1 className="profile-name-lux">
-                    {user?.user_metadata?.full_name || 'Event Enthusiast'}
+                    {user?.user_metadata?.full_name || t.eventEnthusiast}
                   </h1>
                 )}
                 
@@ -263,18 +263,18 @@ export default function ProfilePage() {
                   )}
                 </button>
               </div>
-              <p className="profile-email-lux">{user?.email || 'Sign in to access your profile'}</p>
+              <p className="profile-email-lux">{user?.email || t.signInToAccess}</p>
             </div>
           </div>
           
           <div className="profile-stats-lux">
             <div className="stat-lux">
-              <span className="stat-label-lux">Spent</span>
+              <span className="stat-label-lux">{t.spent}</span>
               <span className="stat-value-lux">EGP {stats.spent}</span>
             </div>
             <div className="stat-divider-lux" />
             <div className="stat-lux">
-              <span className="stat-label-lux">Earned</span>
+              <span className="stat-label-lux">{t.earned}</span>
               <span className="stat-value-lux">EGP {stats.earned}</span>
             </div>
           </div>
@@ -306,12 +306,12 @@ export default function ProfilePage() {
                 {/* Interests Section (from Overview) */}
                 <div className="section-group">
                   <div className="section-header-lux" style={{ borderBottom: 'none', padding: 0, marginBottom: '16px' }}>
-                    <h2 className="section-title">Your Interests</h2>
+                    <h2 className="section-title">{t.yourInterests}</h2>
                     <button 
                       className="edit-interests-btn"
                       onClick={() => setIsEditingInterests(!isEditingInterests)}
                     >
-                      {isEditingInterests ? "Done" : "Edit"}
+                      {isEditingInterests ? t.done : t.edit}
                     </button>
                   </div>
 
@@ -321,7 +321,7 @@ export default function ProfilePage() {
                         <IoSearchOutline size={16} className="search-icon-mini" />
                         <input 
                           type="text" 
-                          placeholder="Search and add interests..." 
+                          placeholder={t.searchInterests} 
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="interests-input"
@@ -367,7 +367,7 @@ export default function ProfilePage() {
                     ))}
                     
                     {userInterests.length === 0 && !isEditingInterests && (
-                      <p className="empty-interests-text">No interests added yet.</p>
+                      <p className="empty-interests-text">{t.noInterestsYet}</p>
                     )}
                   </div>
                 </div>
@@ -377,7 +377,7 @@ export default function ProfilePage() {
                 <div className="section-group">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                     <IoGlobeOutline size={20} className="text-primary" />
-                    <h2 className="section-title" style={{ marginBottom: 0 }}>Language</h2>
+                    <h2 className="section-title" style={{ marginBottom: 0 }}>{t.language}</h2>
                   </div>
                   <div className="currency-options">
                     {languages.map((lang) => (
@@ -393,7 +393,7 @@ export default function ProfilePage() {
                     ))}
                   </div>
                   <p className="note-text">
-                    Some screens may need to be reopened for language changes to fully apply.
+                    {t.languageNote}
                   </p>
                 </div>
 
@@ -402,7 +402,7 @@ export default function ProfilePage() {
                 <div className="section-group">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                     <IoCashOutline size={20} className="text-primary" />
-                    <h2 className="section-title" style={{ marginBottom: 0 }}>Currency</h2>
+                    <h2 className="section-title" style={{ marginBottom: 0 }}>{t.currency}</h2>
                   </div>
                   <div className="currency-options">
                     <div className="currency-box active">
@@ -417,11 +417,11 @@ export default function ProfilePage() {
                     <div className="section-group">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                         <IoLogOutOutline size={20} className="text-error" style={{ color: 'var(--error)' }} />
-                        <h2 className="section-title" style={{ marginBottom: 0 }}>Account Security</h2>
+                        <h2 className="section-title" style={{ marginBottom: 0 }}>{t.accountSecurity}</h2>
                       </div>
                       <button className="signout-btn" onClick={() => signOut()}>
                         <IoLogOutOutline size={22} />
-                        <span>Sign Out</span>
+                        <span>{t.signOut}</span>
                       </button>
                     </div>
                   </>
@@ -432,10 +432,10 @@ export default function ProfilePage() {
                 <div className="bug-report-grid">
                   <div className="bug-form-main">
                     <div className="input-group-lux">
-                      <label className="input-label-lux">Issue Description</label>
+                      <label className="input-label-lux">{t.issueDescription}</label>
                       <textarea 
                         className="bug-textarea-lux"
-                        placeholder="Please provide as much detail as possible about the issue..."
+                        placeholder={t.bugPlaceholder}
                         value={bugDescription}
                         onChange={(e) => setBugDescription(e.target.value)}
                       />
@@ -444,7 +444,7 @@ export default function ProfilePage() {
 
                   <div className="bug-form-sidebar">
                     <div className="input-group-lux">
-                      <label className="input-label-lux">Screenshots (Up to 3)</label>
+                      <label className="input-label-lux">{t.screenshots}</label>
                       <div className="bug-images-grid-lux">
                         {bugImages.map((img, idx) => (
                           <div key={idx} className="bug-image-preview-lux">
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                         {bugImages.length < 3 && (
                           <label className="bug-upload-zone-lux">
                             <IoCameraOutline size={24} />
-                            <span>Add Image</span>
+                            <span>{t.addImage}</span>
                             <input 
                               type="file" 
                               accept="image/*" 
@@ -485,15 +485,15 @@ export default function ProfilePage() {
                         onClick={async () => {
                           setIsSubmittingBug(true);
                           await new Promise(r => setTimeout(r, 1500));
-                          alert("Report submitted. Thank you!");
+                          alert(t.reportSubmitted);
                           setBugDescription("");
                           setBugImages([]);
                           setIsSubmittingBug(false);
                         }}
                       >
-                        {isSubmittingBug ? "Submitting..." : "Send Report"}
+                        {isSubmittingBug ? t.submitting : t.sendReport}
                       </button>
-                      <p className="bug-help-text">Our team usually responds within 24 hours.</p>
+                      <p className="bug-help-text">{t.teamResponse}</p>
                     </div>
                   </div>
                 </div>
@@ -501,8 +501,8 @@ export default function ProfilePage() {
             ) : (
               <div className="tab-placeholder-content">
                 <div className="placeholder-card-lux">
-                  <p>This is the {menuItems.find(m => m.id === activeTab)?.label} section.</p>
-                  <p className="sub-text">Content for this tab is coming soon.</p>
+                  <p>{menuItems.find(m => m.id === activeTab)?.label}</p>
+                  <p className="sub-text">{t.comingSoon}</p>
                 </div>
               </div>
             )}
@@ -511,7 +511,7 @@ export default function ProfilePage() {
         <section className="follow-us-section">
           <div className="follow-header-lux">
             <div className="follow-line" />
-            <span className="follow-title">Follow Us</span>
+            <span className="follow-title">{t.followUs}</span>
             <div className="follow-line" />
           </div>
           <div className="social-links-lux">

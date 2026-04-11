@@ -1,4 +1,7 @@
+"use client";
+
 import { shareEvent } from "@/lib/share";
+import { useLanguage } from "@/lib/language-context";
 import { IoCalendarSharp, IoLocationSharp, IoShareSocialOutline } from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,6 +29,8 @@ export function EventCard({
   attendingCount = 0,
   attendingAvatars = [],
 }: EventCardProps) {
+  const { t } = useLanguage();
+
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -45,7 +50,7 @@ export function EventCard({
           />
           <button 
             className="event-card-share" 
-            aria-label="Share event"
+            aria-label={t.share}
             onClick={handleShare}
           >
             <IoShareSocialOutline size={16} />
@@ -85,7 +90,7 @@ export function EventCard({
                   <div key={i} className="avatar-wrapper" style={{ zIndex: attendingAvatars.length - i }}>
                     <Image 
                       src={avatar}
-                      alt={`Attendee ${i+1}`}
+                      alt={`${t.attending} ${i+1}`}
                       width={28}
                       height={28}
                       className="event-card-avatar"

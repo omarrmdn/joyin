@@ -5,9 +5,11 @@ import { SearchResult } from "@/components/SearchResult";
 import { IoCalendarOutline } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 
 export default function MyEventsPage() {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -61,6 +63,7 @@ export default function MyEventsPage() {
   }
   
   const today = new Date().toISOString().split('T')[0];
+  const locale = language === "ar-EG" ? "ar-EG" : "en-US";
 
   const filteredEvents = events.filter(e => {
     if (e.date === selectedDate) return true;
@@ -76,14 +79,14 @@ export default function MyEventsPage() {
       
       <div className="events-web-container">
         <div className="events-header-simple">
-          <h1>My Events</h1>
+          <h1>{t.myEvents}</h1>
         </div>
 
         <div className="days-horizontal-slider">
           <div className="days-slider-inner">
             {availableDates.map(date => {
               const d = new Date(date);
-              const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
+              const dayName = d.toLocaleDateString(locale, { weekday: "short" });
               const dayNum = d.getDate();
               const isSelected = selectedDate === date;
               const isToday = date === today;
@@ -95,7 +98,7 @@ export default function MyEventsPage() {
                   onClick={() => setSelectedDate(date)}
                 >
                   <span className="day-num">{dayNum}</span>
-                  <span className="day-name">{isToday ? "Today" : dayName}</span>
+                  <span className="day-name">{isToday ? t.today : dayName}</span>
                 </button>
               );
             })}
@@ -110,7 +113,7 @@ export default function MyEventsPage() {
           ) : (
             <div className="empty-state-simple">
               <IoCalendarOutline size={48} />
-              <p>No events found for this day.</p>
+              <p>{t.noEventsForDay}</p>
             </div>
           )}
         </div>

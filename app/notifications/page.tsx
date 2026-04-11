@@ -1,30 +1,32 @@
 "use client";
 
 import { TopBar } from "@/components/TopBar";
+import { useLanguage } from "@/lib/language-context";
 import { IoPeople, IoCloseCircle, IoAlarm, IoMail, IoSparkles, IoKey, IoRefresh, IoBarChart, IoNotifications, IoNotificationsOffOutline, IoCheckmarkDone } from "react-icons/io5";
 
 import { useNotifications } from "@/hooks/useNotifications";
 import { useRouter } from "next/navigation";
 
-const formatTimeAgo = (dateString: string): string => {
-  const now = new Date();
-  const date = new Date((!dateString.includes('Z') && !dateString.includes('+')) ? dateString + 'Z' : dateString);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-
-  return date.toLocaleDateString();
-};
-
 export default function NotificationsPage() {
   const { notifications, loading, markAllAsRead, markAsRead } = useNotifications();
   const router = useRouter();
+  const { t, language } = useLanguage();
+
+  const formatTimeAgo = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date((!dateString.includes('Z') && !dateString.includes('+')) ? dateString + 'Z' : dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t.justNow;
+    if (diffMins < 60) return `${diffMins}${t.minutesAgo}`;
+    if (diffHours < 24) return `${diffHours}${t.hoursAgo}`;
+    if (diffDays < 7) return `${diffDays}${t.daysAgo}`;
+
+    return date.toLocaleDateString(language === "ar-EG" ? "ar-EG" : "en-US");
+  };
 
   const handleNotificationTap = (notif: any) => {
     if (!notif.read) {
@@ -98,11 +100,11 @@ export default function NotificationsPage() {
 
       <div className="notifications-container">
         <div className="notifications-header">
-          <h1>Notifications</h1>
+          <h1>{t.notifications}</h1>
           {notifications.length > 0 && (
             <button className="mark-read-btn" onClick={markAllAsRead}>
               <IoCheckmarkDone size={18} />
-              <span>Mark all as read</span>
+              <span>{t.markAllAsRead}</span>
             </button>
           )}
         </div>
@@ -147,7 +149,7 @@ export default function NotificationsPage() {
               <div className="empty-icon-circle">
                 <IoNotificationsOffOutline size={64} />
               </div>
-              <h3>No notifications</h3>
+              <h3>{t.noNotifications}</h3>
             </div>
           )}
         </div>

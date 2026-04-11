@@ -5,6 +5,7 @@ import { TopBar } from "@/components/TopBar";
 import { TagsBar } from "@/components/TagsBar";
 import { EventCard } from "@/components/EventCard";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/lib/language-context";
 
 export default function Home() {
   const [activeTag, setActiveTag] = useState("All");
@@ -13,6 +14,7 @@ export default function Home() {
   const [tags, setTags] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     async function fetchData() {
@@ -25,7 +27,7 @@ export default function Home() {
           .order('name');
         
         if (tagsData) {
-          setTags(["All", "Near me", ...tagsData.map(t => t.name)]);
+          setTags([t.all, t.nearMe, ...tagsData.map(t => t.name)]);
         }
 
         // Fetch Events with Tag mapping
@@ -56,7 +58,7 @@ export default function Home() {
       }
     }
     fetchData();
-  }, []);
+  }, [language]); // Re-fetch when language changes to update tag labels
 
   const handleLocationDetection = () => {
     if (navigator.geolocation) {
@@ -64,21 +66,21 @@ export default function Home() {
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
-          setActiveTag("Near me");
+          setActiveTag(t.nearMe);
         },
         (error) => {
-          alert("Error detecting location: " + error.message);
+          alert(t.errorDetectingLocation + error.message);
         }
       );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      alert(t.geoNotSupported);
     }
   };
 
   const filteredEvents = events.filter(
     (event) => {
       // 1. Tag Filter
-      if (activeTag === "Near me") {
+      if (activeTag === t.nearMe) {
         if (!userLocation) return false;
         // Simple radius check if event has coordinates
         if (event.latitude && event.longitude) {
@@ -91,7 +93,7 @@ export default function Home() {
         return false;
       }
 
-      if (activeTag !== "All") {
+      if (activeTag !== t.all) {
         if (!event.tags?.includes(activeTag)) return false;
       }
 
@@ -121,7 +123,7 @@ export default function Home() {
           tags={tags}
           activeTag={activeTag}
           onTagPress={(tag) => {
-            if (tag === "Near me" && !userLocation) {
+            if (tag === t.nearMe && !userLocation) {
               handleLocationDetection();
             } else {
               setActiveTag(tag);
@@ -133,7 +135,7 @@ export default function Home() {
       <div className="feed-container">
         {loading ? (
           <div className="center-content">
-            <span className="empty-text">Loading events...</span>
+            <span className="empty-text">{t.loadingEvents}</span>
           </div>
         ) : filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
@@ -145,7 +147,7 @@ export default function Home() {
               location={event.location}
               date={event.date}
               endDate={event.end_date}
-              price={event.price === 0 ? "Free" : event.price}
+              price={event.price === 0 ? t.free : event.price}
               attendingCount={event.attendees_count || 0}
               attendingAvatars={[]}
             />
@@ -153,9 +155,9 @@ export default function Home() {
         ) : (
           <div className="center-content">
             <span className="empty-text">
-              {activeTag === "All" 
-                ? "No events available yet."
-                : `No events found for "${activeTag}".`}
+              {activeTag === t.all 
+                ? t.noEventsYet
+                : `${t.noEventsForTag} "${activeTag}".`}
             </span>
           </div>
         )}

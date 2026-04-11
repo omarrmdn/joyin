@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { useNotifications } from "@/hooks/useNotifications";
 import { IoNotificationsOutline, IoLogInOutline, IoLocationOutline, IoSearchOutline } from "react-icons/io5";
 import Image from "next/image";
@@ -16,6 +17,7 @@ interface TopBarProps {
 export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: TopBarProps) {
   const { user, signInWithGoogle } = useAuth();
   const { unreadCount } = useNotifications();
+  const { t } = useLanguage();
 
   const handleLocationClick = () => {
     if (onLocationPress) {
@@ -30,11 +32,11 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
           alert(`Location detected: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}. Filtering events...`);
         },
         (error) => {
-          alert("Error detecting location: " + error.message);
+          alert(t.errorDetectingLocation + error.message);
         }
       );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      alert(t.geoNotSupported);
     }
   };
 
@@ -45,7 +47,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
         <Link href="/" className="topbar-logo-link">
           <TopbarLogo className="topbar-logo-svg" />
         </Link>
-        <Link href="/notifications" className="icon-btn notification-btn" aria-label="Notifications">
+        <Link href="/notifications" className="icon-btn notification-btn" aria-label={t.notifications}>
           <IoNotificationsOutline size={28} />
           {unreadCount > 0 && <span className="notification-badge" />}
         </Link>
@@ -57,14 +59,14 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
           <IoSearchOutline size={20} className="search-icon" />
           <input
             type="text"
-            placeholder="Search events, locations, or tags..."
+            placeholder={t.searchPlaceholder}
             className="search-input"
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
           />
           <button 
             className="location-btn" 
-            aria-label="Near me"
+            aria-label={t.nearMe}
             onClick={handleLocationClick}
           >
             <IoLocationOutline size={18} />
@@ -74,7 +76,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
         {/* Right: Actions (Desktop only - Mobile uses Bottom Nav for profile) */}
         <div className="topbar-actions desktop-only">
           {/* Notifications (Desktop version) */}
-          <Link href="/notifications" className="icon-btn notification-btn" aria-label="Notifications">
+          <Link href="/notifications" className="icon-btn notification-btn" aria-label={t.notifications}>
             <IoNotificationsOutline size={20} />
             {unreadCount > 0 && <span className="notification-badge" />}
           </Link>
@@ -85,7 +87,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
               {user.user_metadata?.avatar_url ? (
                 <Image
                   src={user.user_metadata.avatar_url}
-                  alt="Profile"
+                  alt={t.profile}
                   width={36}
                   height={36}
                   className="avatar-img"
@@ -99,7 +101,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
           ) : (
             <button onClick={() => signInWithGoogle()} className="signin-btn">
               <IoLogInOutline size={18} />
-              <span>Sign In</span>
+              <span>{t.signIn}</span>
             </button>
           )}
         </div>

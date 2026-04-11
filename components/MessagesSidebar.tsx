@@ -3,6 +3,7 @@
 import { IoSearchOutline } from "react-icons/io5";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { useMessages } from "@/hooks/useMessages";
 import { useMemo, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -20,34 +21,6 @@ const parseUTCDate = (dateString: string) => {
   return new Date(str);
 };
 
-const formatTimeForList = (dateString: string) => {
-  const date = parseUTCDate(dateString);
-  const now = new Date();
-  
-  if (date.toDateString() === now.toDateString()) {
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      const mins = minutes < 10 ? `0${minutes}` : minutes;
-      return `${hours}:${mins} ${ampm}`;
-  }
-  
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday";
-  }
-  
-  const oneWeekAgo = new Date(now);
-  oneWeekAgo.setDate(now.getDate() - 7);
-  if (date > oneWeekAgo) {
-    return date.toLocaleDateString('en-US', { weekday: 'short' });
-  }
-  
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
 type Conversation = {
   id: string;
   name: string;
@@ -62,10 +35,41 @@ type Conversation = {
 
 export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const { messages, loading, markAsRead, markAllAsRead } = useMessages();
   const router = useRouter();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const formatTimeForList = (dateString: string) => {
+    const date = parseUTCDate(dateString);
+    const now = new Date();
+    
+    if (date.toDateString() === now.toDateString()) {
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const mins = minutes < 10 ? `0${minutes}` : minutes;
+        return `${hours}:${mins} ${ampm}`;
+    }
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return t.yesterday;
+    }
+    
+    const locale = language === "ar-EG" ? "ar-EG" : "en-US";
+
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+    if (date > oneWeekAgo) {
+      return date.toLocaleDateString(locale, { weekday: 'short' });
+    }
+    
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  };
 
   useEffect(() => {
     markAllAsRead();
@@ -115,7 +119,7 @@ export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
     return Object.values(groups).sort((a, b) => {
         return b.lastTimestamp.localeCompare(a.lastTimestamp);
     });
-  }, [messages, user]);
+  }, [messages, user, language]);
 
   const filteredConversations = conversations.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -125,7 +129,7 @@ export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
   return (
     <div className={`messages-list-panel ${!isRootPath ? 'hidden-on-mobile' : ''}`}>
       <header className="messages-sidebar-header">
-        <h1>Messages</h1>
+        <h1>{t.messages}</h1>
       </header>
 
       <div className="messages-search-box-wrapper">
@@ -133,7 +137,7 @@ export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
             <IoSearchOutline size={18} className="search-icon" />
             <input 
             type="text" 
-            placeholder="Search conversations..." 
+            placeholder={t.searchConversations} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -194,7 +198,7 @@ export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
           })
         ) : (
           <div className="empty-text" style={{ textAlign: 'center', marginTop: 40 }}>
-            No messages found
+            {t.noMessagesFound}
           </div>
         )}
       </div>

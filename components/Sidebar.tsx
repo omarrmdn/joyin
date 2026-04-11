@@ -11,20 +11,22 @@ import {
   IoLogOutOutline
 } from "react-icons/io5";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import Image from "next/image";
 import TopbarLogo from "./TopbarLogo";
-
-const navItems = [
-  { iconFilled: IoHome, iconOutline: IoHomeOutline, label: "Home", href: "/" },
-  { iconFilled: IoAddCircle, iconOutline: IoAddCircleOutline, label: "Create", href: "/create" },
-  { iconFilled: IoCalendar, iconOutline: IoCalendarOutline, label: "My events", href: "/events" },
-  { iconFilled: IoChatbubbleEllipses, iconOutline: IoChatbubbleEllipsesOutline, label: "Messages", href: "/messages" },
-  { iconFilled: IoPerson, iconOutline: IoPersonOutline, label: "Profile", href: "/profile" },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { user, signInWithGoogle, signOut } = useAuth();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { iconFilled: IoHome, iconOutline: IoHomeOutline, label: t.home, href: "/" },
+    { iconFilled: IoAddCircle, iconOutline: IoAddCircleOutline, label: t.create, href: "/create" },
+    { iconFilled: IoCalendar, iconOutline: IoCalendarOutline, label: t.myEvents, href: "/events" },
+    { iconFilled: IoChatbubbleEllipses, iconOutline: IoChatbubbleEllipsesOutline, label: t.messages, href: "/messages" },
+    { iconFilled: IoPerson, iconOutline: IoPersonOutline, label: t.profile, href: "/profile" },
+  ];
 
   return (
     <div className="sidebar desktop-only">
@@ -58,7 +60,7 @@ export function Sidebar() {
               {user.user_metadata?.avatar_url ? (
                 <Image
                   src={user.user_metadata.avatar_url}
-                  alt="Profile"
+                  alt={t.profile}
                   width={36}
                   height={36}
                   className="user-avatar"
@@ -70,7 +72,7 @@ export function Sidebar() {
               )}
               <div className="user-details">
                 <span className="user-name">
-                  {user.user_metadata?.full_name || user.email?.split("@")[0] || "My Account"}
+                  {user.user_metadata?.full_name || user.email?.split("@")[0] || t.myAccount}
                 </span>
               </div>
             </div>
