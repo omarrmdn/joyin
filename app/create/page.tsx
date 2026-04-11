@@ -144,6 +144,23 @@ export default function CreateEventPage() {
         imageUrl = publicUrl;
       }
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setFormError("You must be logged in to publish an event.");
+        setIsPublishing(false);
+        return;
+      }
+
+      // Ensure user exists in public.users table before inserting event (Fixes FK constraint)
+      await supabase.from('users').upsert({
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        image_url: user.user_metadata?.avatar_url || null,
+        date_signed_in: new Date().toISOString(),
+        currency_code: 'EGP'
+      }, { onConflict: 'id' });
+
       // Insert into Supabase
       const { data: eventData, error: eventError } = await supabase
         .from('events')
@@ -164,7 +181,7 @@ export default function CreateEventPage() {
           currency_code: 'EGP',
           gender: gender || 'all',
           image_url: imageUrl,
-          organizer_id: (await supabase.auth.getUser()).data.user?.id
+          organizer_id: user.id
         })
         .select()
         .single();

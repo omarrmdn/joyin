@@ -20,11 +20,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const syncUser = useCallback(async (user: User | null) => {
+    if (!user) return;
+    
+    // Check if user exists in public.users to avoid unnecessary upserts if preferred,
+    // but upsert is generally safer for metadata sync.
+    await supabase.from('users').upsert({
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata?.full_name || user.email?.split('@')[0],
+      image_url: user.user_metadata?.avatar_url || null,
+      date_signed_in: new Date().toISOString(),
+      currency_code: 'EGP' // Default for this app
+    }, { onConflict: 'id' });
+  }, []);
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) syncUser(session.user);
       setLoading(false);
     });
 
@@ -33,12 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        if (session?.user) syncUser(session.user);
         setLoading(false);
       }
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [syncUser]);
 
   const signInWithGoogle = useCallback(async () => {
     const redirectTo = typeof window !== "undefined"
