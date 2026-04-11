@@ -34,10 +34,10 @@ export default function MyEventsPage() {
         const organizedEvents = organizedData || [];
         
         // Combine and deduplicate
-        const combined = Array.from(new Map([
-          ...organizedEvents.map(e => [e.id, e]),
-          ...attendingEvents.map(e => [e.id, e])
-        ]).values());
+        const combinedMap = new Map();
+        organizedEvents.forEach(e => combinedMap.set(e.id, e));
+        attendingEvents.forEach(e => combinedMap.set(e.id, e));
+        const combined = Array.from(combinedMap.values());
         
         setEvents(combined);
         if (combined.length > 0) {
