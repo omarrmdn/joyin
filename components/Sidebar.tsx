@@ -17,7 +17,7 @@ import TopbarLogo from "./TopbarLogo";
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useLanguage();
 
   const navItems = [
