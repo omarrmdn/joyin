@@ -331,12 +331,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
                 <div className="ed-detail-item">
                   <div className="ed-detail-icon-box">
-                    {currentEvent.location?.toLowerCase() === "online" ? <IoGlobeOutline size={20} /> : <IoLocationSharp size={20} />}
+                    {(currentEvent.is_online || currentEvent.location?.toLowerCase() === "online") ? <IoGlobeOutline size={20} /> : <IoLocationSharp size={20} />}
                   </div>
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">{t.location}</span>
                     <span className="ed-detail-value">
-                      {currentEvent.location?.toLowerCase() === "online" ? t.online : currentEvent.location}
+                      {(currentEvent.is_online || currentEvent.location?.toLowerCase() === "online") ? t.online : currentEvent.location}
                     </span>
                   </div>
                 </div>

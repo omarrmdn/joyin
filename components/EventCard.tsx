@@ -17,6 +17,7 @@ interface EventCardProps {
   price: string | number;
   attendingCount?: number;
   attendingAvatars?: string[];
+  isOnline?: boolean;
 }
 
 export function EventCard({ 
@@ -29,6 +30,7 @@ export function EventCard({
   price, 
   attendingCount = 0,
   attendingAvatars = [],
+  isOnline = false,
 }: EventCardProps) {
   const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
@@ -39,8 +41,9 @@ export function EventCard({
     shareEvent({ id, title });
   };
 
-  const displayLocation = location?.toLowerCase() === "online" ? t.online : location;
+  const displayLocation = (isOnline || location?.toLowerCase() === "online") ? t.online : location;
   const displayPrice = typeof price === "number" ? Math.abs(price) : price;
+  const showOnlineIcon = isOnline || location?.toLowerCase() === "online";
 
   return (
     <Link href={`/explore/${id}`} className="event-card-link">
@@ -69,7 +72,7 @@ export function EventCard({
           
           <div className="event-card-info-row">
             <div className="event-card-info-item">
-              {location?.toLowerCase() === "online" ? <IoGlobeOutline size={16} /> : <IoLocationSharp size={16} />}
+              {showOnlineIcon ? <IoGlobeOutline size={16} /> : <IoLocationSharp size={16} />}
               <span className="event-card-info-text">{displayLocation}</span>
             </div>
             <div className="event-card-info-item">

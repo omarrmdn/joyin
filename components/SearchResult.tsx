@@ -98,9 +98,9 @@ export function SearchResult({ event, index }: SearchResultProps) {
 
           <div className="sr-info-row">
             <div className="sr-info-item">
-              {event.location?.toLowerCase() === "online" ? <IoGlobeOutline size={14} className="sr-icon" color="var(--accent)" /> : <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />}
+              {(event.is_online || event.location?.toLowerCase() === "online") ? <IoGlobeOutline size={14} className="sr-icon" color="var(--accent)" /> : <IoLocationSharp size={14} className="sr-icon" color="var(--accent)" />}
               <span className="sr-info-text">
-                {event.location?.toLowerCase() === "online" ? t.online : event.location}
+                {(event.is_online || event.location?.toLowerCase() === "online") ? t.online : event.location}
               </span>
             </div>
             <div className="sr-info-item">

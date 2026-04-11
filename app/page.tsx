@@ -202,6 +202,7 @@ export default function Home() {
               price={event.price === 0 ? t.free : event.price}
               attendingCount={event.attendees_count || 0}
               attendingAvatars={[]}
+              isOnline={event.is_online}
             />
           ))
         ) : (
