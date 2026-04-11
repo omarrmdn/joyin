@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             if (error) console.error("Error signing in with Google ID Token:", error);
           },
-          use_fedcm_for_prompt: true,
+          use_fedcm_for_prompt: false,
         });
       } else if (typeof window !== "undefined" && !window.google?.accounts?.id) {
         // Check if script is already in document to avoid double loading
