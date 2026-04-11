@@ -161,9 +161,9 @@ export default function CreateEventPage() {
           end_time: endTime || null,
           max_capacity: capacity ? parseInt(capacity) : null,
           price: price ? parseFloat(price) : 0,
-          gender,
+          currency_code: 'EGP',
+          gender: gender || 'all',
           image_url: imageUrl,
-          tags: selectedTags, // Duplicate tags here for easy retrieval
           organizer_id: (await supabase.auth.getUser()).data.user?.id
         })
         .select()

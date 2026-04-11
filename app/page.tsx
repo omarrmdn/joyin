@@ -22,7 +22,7 @@ export default function Home() {
       try {
 
 
-        // Fetch Events with Tag mapping
+        // Fetch Events with Tag mapping and attendee count
         const { data: eventsData } = await supabase
           .from('events')
           .select(`
@@ -31,15 +31,19 @@ export default function Home() {
               tags (
                 name
               )
+            ),
+            attendees (
+              user_id
             )
           `)
           .order('date', { ascending: true });
         
         if (eventsData) {
-          // Transform event_tags into a flat string array
+          // Transform event_tags into a flat string array and count attendees
           const mappedEvents = eventsData.map(event => ({
             ...event,
-            tags: event.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
+            tags: event.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || [],
+            attendees_count: event.attendees?.length || 0
           }));
           setEvents(mappedEvents);
 

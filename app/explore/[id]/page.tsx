@@ -42,12 +42,41 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       try {
         const { data, error } = await supabase
           .from('events')
-          .select('*')
+          .select(`
+            *,
+            users:organizer_id (
+              name,
+              image_url
+            ),
+            event_tags (
+              tags (
+                name
+              )
+            )
+          `)
           .eq('id', eventId)
           .single();
         
         if (data) {
-          setEvent(data);
+          // Flatten tags
+          const mappedEvent = {
+            ...data,
+            host: data.users ? { name: data.users.name, avatar: data.users.image_url } : null,
+            tags: data.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
+          };
+          setEvent(mappedEvent);
+
+          // Check if user is already joined
+          if (user) {
+            const { data: attendance } = await supabase
+              .from('attendees')
+              .select('*')
+              .eq('event_id', eventId)
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (attendance) setIsJoined(true);
+          }
         }
       } catch (error) {
         console.error("Error fetching event:", error);
@@ -56,7 +85,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       }
     }
     fetchEvent();
-  }, [eventId]);
+  }, [eventId, user]);
 
   const activeEvent = event || {
     title: t.loading,
@@ -76,58 +105,32 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [isJoined, setIsJoined] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
 
-  // Mock joined events for overlap check
-  const myJoinedEvents = [
-    {
-      id: "m2",
-      title: "UI/UX Masterclass",
-      date: "Tuesday, Dec 15, 2026",
-      time: "2:00 PM - 5:00 PM",
-    }
-  ];
-
   const handleJoin = async () => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
     if (isJoined || isJoining) return;
     
     setIsJoining(true);
-    // Simulate API delay
-    await new Promise(r => setTimeout(r, 1200));
+    try {
+       // 1. Real Join via Attendees table
+       const { error: joinError } = await supabase
+         .from('attendees')
+         .insert({
+           event_id: eventId,
+           user_id: user.id
+         });
 
-    // Improved overlap check for web mock data
-    const parseWebDateTime = (dateStr: string, timeStr: string) => {
-      try {
-        // Browsers can usually parse "July 15, 2026 4:00 PM"
-        // But need to handle "Thursday, Dec 10, 2026" by removing the day name
-        const cleanDate = dateStr.includes(",") && dateStr.split(",").length > 2 
-          ? dateStr.substring(dateStr.indexOf(",") + 1).trim() // Remove day name
-          : dateStr;
-        
-        return new Date(`${cleanDate} ${timeStr}`).getTime();
-      } catch (e) {
-        return NaN;
-      }
-    };
+       if (joinError) throw joinError;
 
-    const newStart = parseWebDateTime(currentEvent.date, currentEvent.time);
-    const newEnd = parseWebDateTime(currentEvent.endDate || currentEvent.date, currentEvent.endTime || currentEvent.time);
-
-    if (!isNaN(newStart) && !isNaN(newEnd)) {
-      const overlap = myJoinedEvents.find(je => {
-        const eStart = parseWebDateTime(je.date, je.time);
-        const eEnd = parseWebDateTime((je as any).endDate || je.date, (je as any).endTime || je.time);
-        if (isNaN(eStart) || isNaN(eEnd)) return false;
-        return newStart < eEnd && newEnd > eStart;
-      });
-
-      if (overlap) {
-        alert(`${t.overlapConflict} "${overlap.title}".`);
-        setIsJoining(false);
-        return;
-      }
+       setIsJoined(true);
+    } catch (error: any) {
+       console.error("Join error:", error);
+       alert(`Failed to join: ${error.message}`);
+    } finally {
+       setIsJoining(false);
     }
-
-    setIsJoined(true);
-    setIsJoining(false);
   };
 
   // Report Modal State
@@ -150,15 +153,36 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const handleReportSubmit = async () => {
     if (!reportDescription.trim()) return;
     setIsSubmittingReport(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setIsSubmittingReport(false);
-    setReportSuccess(true);
-    setTimeout(() => {
-      setIsReportModalOpen(false);
-      setReportSuccess(false);
-      setReportDescription("");
-      setReportImages([]);
-    }, 2000);
+    try {
+      // 1. Upload images if any
+      const uploadedImages: string[] = [];
+      // (Simplified: real upload logic would iterate reportImages and upload to Storage)
+      
+      // 2. Insert into bug_reports table
+      const { error: reportError } = await supabase
+        .from('bug_reports')
+        .insert({
+          description: `Event Report for ${eventId}: ${reportDescription}`,
+          images: uploadedImages,
+          user_id: user?.id || null,
+          status: 'open'
+        });
+
+      if (reportError) throw reportError;
+
+      setReportSuccess(true);
+      setTimeout(() => {
+        setIsReportModalOpen(false);
+        setReportSuccess(false);
+        setReportDescription("");
+        setReportImages([]);
+      }, 2000);
+    } catch (error: any) {
+      console.error("Report submission error:", error);
+      alert(`Failed to submit report: ${error.message}`);
+    } finally {
+      setIsSubmittingReport(false);
+    }
   };
 
   return (
