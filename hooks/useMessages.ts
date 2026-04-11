@@ -96,11 +96,11 @@ export function useMessages() {
                     body: q.question,
                     event_link: null,
                     read: !!q.answer,
-                    created_at: q.created_at,
+                    created_at: q.created_at || new Date().toISOString(),
                     read_at: q.answered_at,
-                    sender: q.user,
-                    recipient: q.organizer,
-                    event: q.event
+                    sender: q.user as any,
+                    recipient: q.organizer as any,
+                    event: q.event as any
                 });
 
                 if (q.answer) {
@@ -114,11 +114,11 @@ export function useMessages() {
                         body: q.answer,
                         event_link: null,
                         read: true,
-                        created_at: q.answered_at || q.created_at,
+                        created_at: q.answered_at || q.created_at || new Date().toISOString(),
                         read_at: q.answered_at,
-                        sender: q.organizer,
-                        recipient: q.user,
-                        event: q.event
+                        sender: q.organizer as any,
+                        recipient: q.user as any,
+                        event: q.event as any
                     });
                 }
 
