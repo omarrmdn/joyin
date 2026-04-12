@@ -3749,6 +3749,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     width: 100%;
     min-width: 100%;
   }
+  .hidden-on-mobile {
+    display: none !important;
+  }
 }
 
 /* ============================================
