@@ -444,9 +444,18 @@ button {
   width: 100%;
   padding: 24px 20px 80px;
   display: grid;
-  /* Exactly 3 columns for desktop */
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0, 1fr) prevents content from expanding grid cells beyond equal size */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 32px 24px;
+}
+
+.event-card-link {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
 }
 
 .event-card {
@@ -457,6 +466,8 @@ button {
   border-radius: 16px;
   background: transparent;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .event-card:hover {
@@ -696,7 +707,7 @@ button {
 
 @media (max-width: 900px) {
   .feed-container {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -765,7 +776,7 @@ button {
 
   /* Feed and Cards refinements */
   .feed-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
     padding: 16px !important;
   }
