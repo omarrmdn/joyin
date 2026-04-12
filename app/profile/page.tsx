@@ -49,7 +49,7 @@ const TikTokIcon = ({ size = 24 }: { size?: number }) => (
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const [userInterests, setUserInterests] = useState([]);
+  const [userInterests, setUserInterests] = useState<string[]>([]);
 
   const menuItems = [
     { icon: IoSettingsOutline, label: t.accountSettings, id: "account" },
