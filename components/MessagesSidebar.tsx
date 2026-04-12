@@ -169,13 +169,19 @@ export function MessagesSidebar({ isRootPath }: { isRootPath: boolean }) {
                   }}
                 >
                   <div style={{ width: 50, height: 50, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, backgroundColor: 'var(--card-background)' }}>
-                    <Image 
-                      src={msg.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"} 
-                      alt={msg.name} 
-                      width={50} 
-                      height={50} 
-                      style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                    />
+                    {msg.avatar ? (
+                      <Image 
+                        src={msg.avatar} 
+                        alt={msg.name} 
+                        width={50} 
+                        height={50} 
+                        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                      />
+                    ) : (
+                      <div className="avatar-fallback-mini" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary)', color: 'white', fontWeight: 'bold', fontSize: '18px' }}>
+                        {msg.name[0].toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div className="message-content">
                     <div className="message-top">

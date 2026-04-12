@@ -127,7 +127,7 @@ export default function ExplorePage() {
                    <EventCard 
                     key={event.id}
                     {...event}
-                    image={event.image_url}
+                    image={event.image_url || event.image}
                     attendingCount={event.attendingCount || 0}
                     attendingAvatars={[]}
                    />

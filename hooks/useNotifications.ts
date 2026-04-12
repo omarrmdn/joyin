@@ -35,71 +35,11 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-
   const fetchNotifications = useCallback(async () => {
-    // Mock Data for Testing UI
-    const mockNotifications: Notification[] = [
-      {
-        id: "mock1",
-        user_id: "mock-user",
-        title: "New Follower",
-        body: "Michael Chen started following you. Check out their profile and upcoming events.",
-        type: "new_attendee",
-        data: { user_id: 'michael' },
-        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-        read: false,
-        sent_at: null,
-      },
-      {
-        id: "mock2",
-        user_id: "mock-user",
-        title: "Event Update",
-        body: "The location for 'Design Workshop 2024' has been updated to Room 4B.",
-        type: "event_update",
-        data: { event_id: 'workshop-123' },
-        created_at: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-        read: true,
-        sent_at: null,
-      },
-      {
-        id: "mock3",
-        user_id: "mock-user",
-        title: "Reminder",
-        body: "Your event 'Startup Pitch Night' starts tomorrow at 6:00 PM.",
-        type: "reminder_24hr",
-        data: { event_id: 'startup-pitch' },
-        created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        read: false,
-        sent_at: null,
-      },
-      {
-        id: "mock4",
-        user_id: "mock-user",
-        title: "New Message",
-        body: "Elena Rodriguez sent you a message about the upcoming Meetup.",
-        type: "message",
-        data: { message_id: 'msg_1' },
-        created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        read: true,
-        sent_at: null,
-      },
-      {
-        id: "mock5",
-        user_id: "mock-user",
-        title: "Weekly Stats",
-        body: "Your events reached 450 people this week. Keep up the great work!",
-        type: "event_stats",
-        data: {},
-        created_at: new Date(Date.now() - 432000000).toISOString(), // 5 days ago
-        read: true,
-        sent_at: null,
-      }
-    ];
-
     if (!user?.id) {
       setLoading(false);
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter((n) => !n.read).length);
+      setNotifications([]);
+      setUnreadCount(0);
       return;
     }
 
@@ -117,12 +57,12 @@ export function useNotifications() {
         throw error;
       }
 
-      const finalData: Notification[] = (data && data.length > 0 ? data : mockNotifications).map((n) => ({
+      const finalData: Notification[] = (data || []).map((n) => ({
         ...n,
         created_at: n.created_at || new Date().toISOString(),
         data: (n.data as Record<string, any>) || {},
         read: !!n.read,
-      })) as any[];
+      }));
       
       setNotifications(finalData);
       const unread = finalData.filter((n) => !n.read).length;
@@ -224,12 +164,12 @@ export function useNotifications() {
             data: raw.data || {},
             read: !!raw.read
           };
-          setNotifications((prev) => prev.map(n => n.id === updated.id ? updated : n));
           
-          setNotifications(prev => {
-            const unread = prev.filter(n => !n.read).length;
+          setNotifications((prev) => {
+            const updatedList = prev.map(n => n.id === updated.id ? updated : n);
+            const unread = updatedList.filter(n => !n.read).length;
             setUnreadCount(unread);
-            return prev;
+            return updatedList;
           });
         }
       )

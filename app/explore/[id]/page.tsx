@@ -36,7 +36,9 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [loading, setLoading] = useState(true);
   const { user, signInWithGoogle } = useAuth();
   const { t } = useLanguage();
+  const [attendees, setAttendees] = useState<string[]>([]);
   const [imgError, setImgError] = useState(false);
+  const [hostImgError, setHostImgError] = useState(false);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -67,6 +69,21 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             tags: data.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
           };
           setEvent(mappedEvent);
+
+          // Fetch real attendees for PFPs
+          const { data: attendeesData } = await supabase
+            .from('attendees')
+            .select(`
+              users:user_id (
+                image_url
+              )
+            `)
+            .eq('event_id', eventId)
+            .limit(3);
+          
+          if (attendeesData) {
+            setAttendees(attendeesData.map((a: any) => a.users?.image_url).filter(Boolean));
+          }
 
           // Check if user is already joined
           if (user) {
@@ -223,7 +240,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
               <Image 
-                src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (currentEvent.image_url || currentEvent.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
+                src={imgError || !currentEvent.image_url ? "/placeholder-event.svg" : currentEvent.image_url} 
                 alt={currentEvent.title} 
                 fill 
                 className="ed-hero-image"
@@ -238,30 +255,39 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
               
               <div className="ed-quick-host-info-row">
                 <div className="ed-quick-host-info">
-                  <Image 
-                    src={currentEvent.host?.avatar || "https://i.pravatar.cc/150"} 
-                    alt={currentEvent.host?.name || t.organizer} 
-                    width={32} 
-                    height={32} 
-                    className="ed-mini-host-avatar"
-                  />
-                  <span className="ed-host-name-mini">{currentEvent.host?.name || t.organizer}</span>
+                  {currentEvent.host?.avatar && !hostImgError ? (
+                    <Image 
+                      src={currentEvent.host.avatar} 
+                      alt={currentEvent.host?.name || t.organizer} 
+                      width={44} 
+                      height={44} 
+                      className="ed-mini-host-avatar"
+                      onError={() => setHostImgError(true)}
+                    />
+                  ) : (
+                    <div className="ed-mini-host-avatar-fallback">
+                      {currentEvent.host?.name?.[0] || 'O'}
+                    </div>
+                  )}
+                  <div className="ed-host-details">
+                    <span className="ed-host-label">{t.organizer}</span>
+                    <span className="ed-host-name-mini">{currentEvent.host?.name || t.organizer}</span>
+                  </div>
                 </div>
 
                 <div className="ed-attending-group-mini">
-                   <span className="ed-attending-text-mini">{currentEvent.attendees_count || 0}+ {t.attending}</span>
-                   <div className="ed-avatar-stack-mini">
-                     {[1,2,3].map(i => (
-                       <div key={i} className="ed-stack-avatar-box-mini">
-                         <Image 
-                           src={`https://i.pravatar.cc/100?u=${i}`} 
-                           alt={t.attending} 
-                           width={28} 
-                           height={28} 
-                         />
-                       </div>
-                     ))}
-                   </div>
+                  {attendees.length > 0 && (
+                    <div className="ed-avatar-stack-mini">
+                      {attendees.map((avatar, i) => (
+                        <div key={i} className="ed-stack-avatar-box-mini">
+                          <Image src={avatar} alt="Attendee" width={28} height={28} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <span className="ed-attending-text-mini">
+                    {currentEvent.attendees_count > 0 ? `+${currentEvent.attendees_count}` : '0'} {t.attending}
+                  </span>
                 </div>
               </div>
 

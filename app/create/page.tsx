@@ -75,10 +75,7 @@ export default function CreateEventPage() {
         setTagOptions(data.map(t => t.name));
       } else if (error) {
         console.error("Error fetching tags:", error);
-        setTagOptions([
-          "Music & Concerts", "Technology & AI", "Art & Culture", 
-          "Food & Drinks", "Sports & Fitness", "Social Gathering"
-        ]);
+        setTagOptions([]);
       }
     }
     fetchTags();
@@ -188,7 +185,7 @@ export default function CreateEventPage() {
           end_date: endDate || null,
           end_time: endTime || null,
           max_capacity: capacity ? parseInt(capacity) : null,
-          price: price ? parseFloat(price) : 0,
+          price: price ? Math.abs(parseFloat(price)) : 0,
           currency_code: 'EGP',
           gender: gender || 'all',
           image_url: imageUrl,

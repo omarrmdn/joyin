@@ -44,7 +44,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
       <Link href={`/explore/${event.id}`} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
           <Image 
-            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (event.image_url || event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
+            src={imgError || !(event.image_url || event.image) ? "/placeholder-event.svg" : (event.image_url || event.image)} 
             alt={event.title}
             fill
             className="search-result-image"
@@ -102,7 +102,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
             <div className="sr-info-item">
               <IoCalendarSharp size={14} className="sr-icon" color="var(--accent)" />
               <span className="sr-info-text">
-                {event.endDate ? `${event.date} - ${event.endDate}` : event.date}
+                {event.end_date ? `${event.date} - ${event.end_date}` : event.date}
               </span>
             </div>
             <div className="sr-info-item">

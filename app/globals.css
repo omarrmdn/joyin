@@ -467,7 +467,7 @@ button {
 
 .event-card-image-container {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   position: relative;
   border-radius: 12px;
   overflow: hidden;
@@ -475,7 +475,12 @@ button {
 }
 
 .event-card-image {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .event-card-share {
@@ -721,13 +726,120 @@ button {
     display: flex;
   }
 
+  /* Header refinements */
+  .topbar-container {
+    padding: 12px 16px 8px !important;
+  }
+
+  .topbar-mobile-header {
+    margin-bottom: 0 !important;
+    padding: 0 4px !important;
+  }
+
+  .topbar-inner {
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .topbar-search {
+    max-width: 100% !important;
+    margin-top: 12px !important;
+    height: 50px !important;
+    border-color: var(--gray) !important;
+    background: var(--background) !important;
+    padding: 0 7px !important;
+    gap: 10px !important;
+  }
+
+  .tags-bar {
+    padding: 8px 16px 12px !important;
+  }
+
+  .tag-pill {
+    padding: 6px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Feed and Cards refinements */
   .feed-container {
     grid-template-columns: 1fr;
     gap: 24px;
+    padding: 16px !important;
   }
 
   .event-card-image-container {
-    aspect-ratio: 16/9;
+    height: 150px !important;
+    aspect-ratio: auto !important;
+  }
+
+  .event-card-title {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+
+  .event-card-info-text {
+    font-size: 14px !important;
+  }
+
+  .event-card-price {
+    font-size: 18px !important;
+  }
+
+  .event-card-content {
+    gap: 10px !important;
+  }
+
+  /* Search Results (Horizontal on mobile) */
+  .search-result-item {
+    flex-direction: row !important;
+    padding: 12px 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    align-items: center !important;
+  }
+
+  .sr-card-link-wrapper {
+    flex-direction: row !important;
+  }
+
+  .search-result-image-wrapper {
+    width: 100px !important;
+    height: 100px !important;
+    aspect-ratio: 1/1 !important;
+    border-radius: 15px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .search-result-content {
+    padding: 0 0 0 15px !important;
+    height: 100px !important;
+    justify-content: space-between !important;
+    gap: 0 !important;
+    flex: 1 !important;
+  }
+
+  .sr-title {
+    font-size: 17px !important;
+  }
+
+  .sr-info-row-flex {
+    flex-direction: row !important;
+    gap: 10px !important;
+    margin-top: 4px;
+  }
+
+  .sr-info-item {
+    width: auto !important;
+    max-width: 50%;
+  }
+
+  .sr-price {
+    font-size: 15px !important;
   }
 
   .topbar-wrapper {
@@ -1463,7 +1575,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .search-result-image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9; /* Changed from 16/10 to match standard EventCard */
   overflow: hidden;
   /* Keep this for image clipping */
   flex-shrink: 0;
@@ -1472,7 +1584,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .search-result-image {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .search-result-content {
@@ -1684,6 +1801,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   .profile-header-main {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .profile-stats-lux {
+    width: 100% !important;
+    justify-content: space-around !important;
+    gap: 0 !important;
+    margin-top: 20px !important;
   }
 }
 
@@ -2529,7 +2653,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .ed-mini-host-avatar {
+  width: 44px !important;
+  height: 44px !important;
   border-radius: 50%;
+  object-fit: cover;
 }
 
 .ed-host-name-mini {
@@ -2580,6 +2707,52 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   font-size: 14px;
   font-weight: 600;
   border: 1px solid var(--border);
+}
+
+.ed-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.ed-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--foreground);
+}
+
+.ed-description {
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--secondary-text);
+  white-space: pre-wrap;
+}
+
+.ed-host-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.ed-host-label {
+  font-size: 12px;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.ed-mini-host-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
 }
 
 .ed-price-row-lux {

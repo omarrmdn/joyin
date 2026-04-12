@@ -23,11 +23,7 @@ import { useState, useMemo, useEffect } from "react";
 import { IoSearchOutline, IoClose } from "react-icons/io5";
 import { compressImage } from "@/lib/compressImage";
 
-// Mock tags for interests
-const INTERESTS = [
-  "Music", "Nightlife", "Tech", "Food", "Art", 
-  "Sports", "Business", "Fashion", "Health", "Gaming"
-];
+const INTERESTS: string[] = [];
 
 // Brand SVGs to avoid lucide-react missing icon errors
 const InstagramIcon = ({ size = 24 }: { size?: number }) => (
@@ -53,7 +49,7 @@ const TikTokIcon = ({ size = 24 }: { size?: number }) => (
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const [userInterests, setUserInterests] = useState(["Music", "Tech", "Food"]);
+  const [userInterests, setUserInterests] = useState([]);
 
   const menuItems = [
     { icon: IoSettingsOutline, label: t.accountSettings, id: "account" },

@@ -193,13 +193,19 @@ export default function ChatPage() {
                 <IoChevronBack size={24} className="rtl-flip" />
             </button>
             <div className="chat-header-info">
-                <Image 
-                    src={selectedConversation.avatar || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"} 
-                    alt={selectedConversation.name} 
-                    width={48} 
-                    height={48} 
-                    className="chat-header-avatar"
-                />
+                {selectedConversation.avatar ? (
+                    <Image 
+                        src={selectedConversation.avatar} 
+                        alt={selectedConversation.name} 
+                        width={48} 
+                        height={48} 
+                        className="chat-header-avatar"
+                    />
+                ) : (
+                    <div className="chat-header-avatar-fallback">
+                        {selectedConversation.name[0].toUpperCase()}
+                    </div>
+                )}
                 <div className="chat-header-text">
                     <span className="chat-header-name">{selectedConversation.name}</span>
                     <span className="chat-header-role">{headerSubtitle}</span>

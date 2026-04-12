@@ -50,7 +50,7 @@ export function EventCard({
       <div className="event-card">
         <div className="event-card-image-container">
           <Image 
-            src={imgError ? "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000" : (image || "https://images.unsplash.com/photo-1540575467063-178a50c2df8b?auto=format&fit=crop&q=80&w=2000")} 
+            src={imgError || !image ? "/placeholder-event.svg" : image} 
             alt={title} 
             fill 
             className="event-card-image"

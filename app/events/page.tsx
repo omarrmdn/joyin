@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TopBar } from "@/components/TopBar";
 import { SearchResult } from "@/components/SearchResult";
 import { IoCalendarOutline } from "react-icons/io5";
@@ -13,35 +13,76 @@ export default function MyEventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const sliderRef = useRef<HTMLDivElement>(null);
+  
+  const today = (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  })();
+
 
   useEffect(() => {
     async function fetchMyEvents() {
       if (!user) return;
       setLoading(true);
       try {
-        // Fetch events where user is organizer OR participant
+        // Bridge identities: fetch all IDs associated with this email
+        const { data: userAliases } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', user.email);
+        
+        const allUserIds = userAliases?.map(u => u.id) || [user.id];
+        if (!allUserIds.includes(user.id)) allUserIds.push(user.id);
+
+        // Fetch events where any of the user's identities is organizer OR participant
         const { data: organizedData } = await supabase
           .from('events')
           .select('*')
-          .eq('organizer_id', user.id);
+          .in('organizer_id', allUserIds);
           
         const { data: attendedData } = await supabase
           .from('attendees')
           .select('events (*)')
-          .eq('user_id', user.id);
-        
-        const attendingEvents = attendedData?.map(a => a.events).filter(Boolean) || [];
-        const organizedEvents = organizedData || [];
-        
+          .in('user_id', allUserIds);
+
         // Combine and deduplicate
         const combinedMap = new Map();
-        organizedEvents.forEach(e => combinedMap.set(e.id, e));
-        attendingEvents.forEach(e => combinedMap.set(e.id, e));
-        const combined = Array.from(combinedMap.values());
         
+        const normalizeEvent = (e: any) => {
+          if (!e) return null;
+          return {
+            ...e,
+            date: e.date?.split('T')[0],
+            end_date: e.end_date?.split('T')[0]
+          };
+        };
+
+        (organizedData || []).forEach(e => {
+          const norm = normalizeEvent(e);
+          if (norm) combinedMap.set(norm.id, norm);
+        });
+        
+        (attendedData || []).forEach(a => {
+          const norm = normalizeEvent(a.events);
+          if (norm) combinedMap.set(norm.id, norm);
+        });
+
+        const combined = Array.from(combinedMap.values());
         setEvents(combined);
+        
         if (combined.length > 0) {
-          setSelectedDate(combined[0].date);
+          const todayStr = new Date().toISOString().split('T')[0];
+          const datesWithEvents = Array.from(new Set(
+            combined.flatMap(e => e.end_date ? getDaysInRange(e.date, e.end_date) : [e.date])
+          )).sort();
+
+          if (datesWithEvents.includes(today)) {
+            setSelectedDate(today);
+          } else {
+            const nextDate = datesWithEvents.find(d => d >= today);
+            setSelectedDate(nextDate || datesWithEvents[0]);
+          }
         }
       } catch (error) {
         console.error("Error fetching my events:", error);
@@ -50,7 +91,16 @@ export default function MyEventsPage() {
       }
     }
     fetchMyEvents();
-  }, [user]);
+  }, [user, today]);
+
+  useEffect(() => {
+    if (selectedDate && sliderRef.current) {
+      const activeEl = sliderRef.current.querySelector('.day-square-card.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }, [selectedDate]);
 
   const availableDates = Array.from(new Set(
     events.flatMap(e => e.end_date ? getDaysInRange(e.date, e.end_date) : [e.date])
@@ -71,10 +121,10 @@ export default function MyEventsPage() {
     }
   }
   
-  const today = new Date().toISOString().split('T')[0];
   const locale = language === "ar-EG" ? "ar-EG" : "en-US";
 
   const filteredEvents = events.filter(e => {
+    // Both e.date and selectedDate are now normalized YYYY-MM-DD
     if (e.date === selectedDate) return true;
     if (e.end_date && selectedDate >= e.date && selectedDate <= e.end_date) return true;
     return false;
@@ -91,7 +141,7 @@ export default function MyEventsPage() {
           <h1>{t.myEvents}</h1>
         </div>
 
-        <div className="days-horizontal-slider">
+        <div className="days-horizontal-slider" ref={sliderRef}>
           <div className="days-slider-inner">
             {availableDates.map(date => {
               const d = new Date(date);
