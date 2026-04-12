@@ -650,8 +650,9 @@ button {
   justify-content: center;
   gap: 4px;
   color: var(--secondary-text);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
+  text-align: center;
 }
 
 .tab-item.active {
@@ -761,7 +762,7 @@ button {
     height: 50px !important;
     border-color: var(--gray) !important;
     background: var(--background) !important;
-    padding: 0 7px !important;
+    padding: 0 16px !important;
     gap: 10px !important;
   }
 
@@ -782,8 +783,8 @@ button {
   }
 
   .event-card-image-container {
-    height: 150px !important;
-    aspect-ratio: auto !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
   }
 
   .event-card-title {
