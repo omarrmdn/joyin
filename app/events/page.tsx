@@ -26,14 +26,19 @@ export default function MyEventsPage() {
       if (!user) return;
       setLoading(true);
       try {
-        // Bridge identities: fetch all IDs associated with this email
-        const { data: userAliases } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', user.email);
+        let allUserIds = [user.id];
         
-        const allUserIds = userAliases?.map(u => u.id) || [user.id];
-        if (!allUserIds.includes(user.id)) allUserIds.push(user.id);
+        if (user.email) {
+          const { data: userAliases } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', user.email);
+          
+          if (userAliases) {
+            const aliasIds = userAliases.map(u => u.id);
+            allUserIds = Array.from(new Set([...allUserIds, ...aliasIds]));
+          }
+        }
 
         // Fetch events where any of the user's identities is organizer OR participant
         const { data: organizedData } = await supabase
