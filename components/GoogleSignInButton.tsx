@@ -8,96 +8,98 @@ export default function GoogleSignInButton() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { signInWithIdToken } = useAuth();
   const { language, t } = useLanguage();
-  const [gisReady, setGisReady] = useState(false);
   const [buttonRendered, setButtonRendered] = useState(false);
+  const initializedRef = useRef(false);
 
-  // Initialize GIS and try to render the native button
+  const googleCallback = useRef(async (response: any) => {
+    if (response.credential) {
+      try {
+        await signInWithIdToken(response.credential);
+      } catch (err) {
+        console.error("Error authenticating with Supabase:", err);
+      }
+    }
+  });
+
+  // Keep callback ref up to date
+  useEffect(() => {
+    googleCallback.current = async (response: any) => {
+      if (response.credential) {
+        try {
+          await signInWithIdToken(response.credential);
+        } catch (err) {
+          console.error("Error authenticating with Supabase:", err);
+        }
+      }
+    };
+  }, [signInWithIdToken]);
+
+  // Try rendering the native GIS button
   useEffect(() => {
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 15;
 
-    const initializeGoogle = () => {
+    const tryRender = () => {
       attempts++;
-      if (typeof window !== "undefined" && window.google?.accounts?.id && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          callback: async (response: any) => {
-            if (response.credential) {
-              try {
-                await signInWithIdToken(response.credential);
-              } catch (err) {
-                console.error("Error authenticating with Supabase:", err);
-              }
-            }
-          },
-        });
-        setGisReady(true);
+      const gis = (window as any).google?.accounts?.id;
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+      if (gis && clientId) {
+        if (!initializedRef.current) {
+          gis.initialize({
+            client_id: clientId,
+            callback: (response: any) => googleCallback.current(response),
+          });
+          initializedRef.current = true;
+        }
 
         if (containerRef.current) {
           containerRef.current.innerHTML = "";
-          window.google.accounts.id.renderButton(containerRef.current, {
+          gis.renderButton(containerRef.current, {
             theme: "outline",
             size: "large",
             type: "standard",
             text: "signin_with",
             shape: "pill",
             width: 280,
-            locale: language.split('-')[0],
+            locale: language.split("-")[0],
           });
-          // Check if GIS actually rendered something
-          setTimeout(() => {
-            if (containerRef.current && containerRef.current.childElementCount > 0) {
+
+          // Check if something was actually rendered
+          requestAnimationFrame(() => {
+            if (containerRef.current && containerRef.current.children.length > 0) {
               setButtonRendered(true);
             }
-          }, 500);
+          });
         }
       } else if (attempts < maxAttempts) {
-        setTimeout(initializeGoogle, 500);
+        setTimeout(tryRender, 400);
       }
     };
 
-    initializeGoogle();
-  }, [signInWithIdToken, language]);
+    tryRender();
+  }, [language]);
 
-  // Custom fallback button handler
+  // Custom fallback click: call prompt() which shows One Tap / account chooser
   const handleFallbackClick = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt((notification: any) => {
-        // If One Tap is suppressed, fall back to OAuth redirect
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Open Google sign-in in a popup manually
-          const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-          const redirectUri = encodeURIComponent(window.location.origin);
-          const scope = encodeURIComponent("openid email profile");
-          const nonce = Math.random().toString(36).substring(2);
-          
-          const width = 500;
-          const height = 600;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2;
-          
-          window.open(
-            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=${scope}&nonce=${nonce}&prompt=select_account`,
-            "google-signin",
-            `width=${width},height=${height},left=${left},top=${top}`
-          );
-        }
-      });
+    const gis = (window as any).google?.accounts?.id;
+    if (gis) {
+      gis.prompt();
     }
   };
 
   return (
     <div style={{ minHeight: "44px", display: "flex", justifyContent: "center", width: "100%" }}>
-      {/* Native GIS button container */}
-      <div 
-        ref={containerRef} 
-        style={{ 
+      {/* Native GIS rendered button */}
+      <div
+        ref={containerRef}
+        style={{
           display: buttonRendered ? "flex" : "none",
-          justifyContent: "center" 
+          justifyContent: "center",
         }}
       />
 
-      {/* Fallback: Custom styled Google button */}
+      {/* Custom fallback button */}
       {!buttonRendered && (
         <button
           onClick={handleFallbackClick}
@@ -127,7 +129,6 @@ export default function GoogleSignInButton() {
             e.currentTarget.style.boxShadow = "none";
           }}
         >
-          {/* Google "G" icon */}
           <svg width="20" height="20" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
