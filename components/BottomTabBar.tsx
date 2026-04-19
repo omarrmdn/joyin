@@ -16,12 +16,7 @@ import Image from "next/image";
 export function BottomTabBar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { t, locale } = useLanguage();
-
-  const localizeHref = (href: string) => {
-    if (href === "/") return locale === "" ? "/" : locale;
-    return `${locale}${href}`;
-  };
+  const { t, localizeHref } = useLanguage();
 
   const tabs = [
     { href: "/", label: t.home, iconFilled: IoHome, iconOutline: IoHomeOutline },

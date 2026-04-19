@@ -17,12 +17,7 @@ interface TopBarProps {
 export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: TopBarProps) {
   const { user, signInWithGoogle } = useAuth();
   const { unreadCount } = useNotifications();
-  const { t, locale } = useLanguage();
-
-  const localizeHref = (href: string) => {
-    if (href === "/") return locale === "" ? "/" : locale;
-    return `${locale}${href}`;
-  };
+  const { t, localizeHref } = useLanguage();
 
   const handleLocationClick = () => {
     if (onLocationPress) {
@@ -52,10 +47,17 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
         <Link href={localizeHref("/")} className="topbar-logo-link">
           <TopbarLogo className="topbar-logo-svg" />
         </Link>
-        <Link href={localizeHref("/notifications")} className="icon-btn notification-btn" aria-label={t.notifications}>
-          <IoNotificationsOutline size={28} />
-          {unreadCount > 0 && <span className="notification-badge" />}
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {!user && (
+            <button onClick={() => signInWithGoogle()} className="icon-btn" aria-label={t.signIn}>
+              <IoLogInOutline size={24} />
+            </button>
+          )}
+          <Link href={localizeHref("/notifications")} className="icon-btn notification-btn" aria-label={t.notifications}>
+            <IoNotificationsOutline size={28} />
+            {unreadCount > 0 && <span className="notification-badge" />}
+          </Link>
+        </div>
       </div>
 
       <div className="topbar-inner">

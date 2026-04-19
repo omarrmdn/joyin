@@ -48,15 +48,17 @@ export default function LoginPage() {
 
   return (
     <div style={{ 
-      position: 'fixed',
-      top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999,
+      minHeight: '100vh',
+      width: '100%',
+      zIndex: 9999,
       display: 'flex', 
       flexDirection: 'column',
       justifyContent: 'center', 
       alignItems: 'center', 
       padding: '24px',
       backgroundColor: 'var(--background)',
-      fontFamily: 'inherit'
+      fontFamily: 'inherit',
+      overflowY: 'auto'
     }}>
       <div style={{
         width: '100%',

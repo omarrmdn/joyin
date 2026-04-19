@@ -9,16 +9,30 @@ import { useLanguage } from "@/lib/language-context";
 import { useActions } from "@/hooks/use-actions";
 
 export default function Home() {
-  const [activeTag, setActiveTag] = useState("All");
+  const { t, language } = useLanguage();
+  const [activeTag, setActiveTag] = useState(t.all);
   const [searchQuery, setSearchQuery] = useState("");
   const [events, setEvents] = useState<any[]>([]);
-  const [tags, setTags] = useState<string[]>(["All"]);
+  const [tags, setTags] = useState<string[]>([t.all, t.nearMe]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const { t, language } = useLanguage();
   const { logAction } = useActions();
 
   useEffect(() => {
+    // 0. IMMEDIATELY update labels for high-level tags to avoid "lag"
+    setActiveTag(prev => {
+      if (prev === "All" || prev === "الكل") return t.all;
+      if (prev === "Near me" || prev === "قريب مني") return t.nearMe;
+      return prev;
+    });
+
+    setTags(prev => {
+      const next = [...prev];
+      if (next.length > 0) next[0] = t.all;
+      if (next.length > 1) next[1] = t.nearMe;
+      return next;
+    });
+
     async function fetchData() {
       setLoading(true);
       try {

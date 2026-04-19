@@ -31,14 +31,35 @@ export function LanguageProvider({
     // Only fetch from localStorage if we are in the browser
     const savedLang = localStorage.getItem("app-language") as Language;
     
-    // If the saved language is valid and differs from our current state (which came from server cookies)
-    // we update it. This should only happen if cookies are blocked but localStorage works.
+    // Check if current path has a locale prefix
+    const segments = pathname.split("/");
+    const pathLang = segments[1];
+    const pathIsAr = pathLang === "ar";
+    const pathIsEn = pathLang === "en";
+
+    if (pathIsAr || pathIsEn) {
+      // If the URL has a locale, it MUST be the source of truth
+      const targetLang: Language = pathIsAr ? "ar-EG" : "en";
+      
+      if (language !== targetLang) {
+        setLanguageState(targetLang);
+      }
+      
+      // Ensure localStorage and cookies are in sync with the URL
+      if (savedLang !== targetLang) {
+        localStorage.setItem("app-language", targetLang);
+        document.cookie = `app-language=${targetLang}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      return;
+    }
+    
+    // If no locale in URL, then localStorage can override the state
     if (savedLang && (savedLang === "en" || savedLang === "ar-EG") && savedLang !== language) {
       setLanguageState(savedLang);
       // Also sync the cookie back so the next refresh is correct on the server
       document.cookie = `app-language=${savedLang}; path=/; max-age=31536000; SameSite=Lax`;
     }
-  }, [language]);
+  }, [language, pathname]);
 
   const setLanguage = (lang: Language) => {
     if (lang === language) return;

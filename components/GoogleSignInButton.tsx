@@ -46,7 +46,14 @@ export default function GoogleSignInButton() {
   return (
     <div 
       ref={containerRef} 
-      style={{ overflow: "hidden", borderRadius: "25px", height: "40px" }}
+      className="google-signin-container"
+      style={{ 
+        minHeight: "44px", 
+        width: "100%", 
+        display: "flex", 
+        justifyContent: "center",
+        overflow: "visible" 
+      }}
     />
   );
 }
