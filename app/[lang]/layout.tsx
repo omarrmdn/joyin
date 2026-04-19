@@ -109,9 +109,9 @@ export default async function RootLayout({
       data-theme="dark"
     >
       <head>
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
       </head>
       <body className="antialiased">
+        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
         <LanguageProvider initialLanguage={language}>
           <AuthProvider>
             <div className="app-shell">
