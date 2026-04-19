@@ -6,6 +6,7 @@ import { TagsBar } from "@/components/TagsBar";
 import { EventCard } from "@/components/EventCard";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
+import { useActions } from "@/hooks/use-actions";
 
 export default function Home() {
   const [activeTag, setActiveTag] = useState("All");
@@ -15,6 +16,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const { t, language } = useLanguage();
+  const { logAction } = useActions();
 
   useEffect(() => {
     async function fetchData() {
@@ -110,6 +112,9 @@ export default function Home() {
       }
     }
     fetchData();
+
+    // Log page view
+    logAction({ action_type: 'view_home' });
   }, [language]); // Re-fetch when language changes to update tag labels
 
   const handleLocationDetection = () => {
@@ -168,13 +173,29 @@ export default function Home() {
       <div className="topbar-wrapper">
         <TopBar 
           searchQuery={searchQuery} 
-          onSearchChange={setSearchQuery} 
-          onLocationPress={handleLocationDetection}
+          onSearchChange={(query) => {
+            setSearchQuery(query);
+            // We could debounce this, but for now let's just log if they type something substantial
+            if (query.length > 3 && query.length % 5 === 0) {
+              logAction({ 
+                action_type: 'search_events', 
+                metadata: { query } 
+              });
+            }
+          }} 
+          onLocationPress={() => {
+            logAction({ action_type: 'click_near_me' });
+            handleLocationDetection();
+          }}
         />
         <TagsBar
           tags={tags}
           activeTag={activeTag}
           onTagPress={(tag) => {
+            logAction({ 
+              action_type: 'click_tag', 
+              metadata: { tag } 
+            });
             if (tag === t.nearMe && !userLocation) {
               handleLocationDetection();
             } else {

@@ -32,8 +32,13 @@ export function EventCard({
   attendingAvatars = [],
   isOnline = false,
 }: EventCardProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [imgError, setImgError] = useState(false);
+
+  const localizeHref = (href: string) => {
+    if (href === "/") return locale === "" ? "/" : locale;
+    return `${locale}${href}`;
+  };
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +51,7 @@ export function EventCard({
   const showOnlineIcon = isOnline || location?.toLowerCase() === "online";
 
   return (
-    <Link href={`/explore/${id}`} className="event-card-link">
+    <Link href={localizeHref(`/explore/${id}`)} className="event-card-link">
       <div className="event-card">
         <div className="event-card-image-container">
           <Image 

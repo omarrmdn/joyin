@@ -23,6 +23,7 @@ import {
 } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useActions } from "@/hooks/use-actions";
 
 interface EventDetailsProps {
   params: Promise<{ id: string }>;
@@ -35,7 +36,8 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { user, signInWithGoogle } = useAuth();
-  const { t } = useLanguage();
+  const { t, localizeHref } = useLanguage();
+  const { logAction } = useActions();
   const [attendees, setAttendees] = useState<string[]>([]);
   const [imgError, setImgError] = useState(false);
   const [hostImgError, setHostImgError] = useState(false);
@@ -104,6 +106,13 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       }
     }
     fetchEvent();
+
+    // Log event view
+    logAction({ 
+      action_type: 'view_event', 
+      entity_type: 'event', 
+      entity_id: eventId 
+    });
   }, [eventId, user]);
 
   const activeEvent = event || {
@@ -142,6 +151,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
          });
 
        if (joinError) throw joinError;
+
+       await logAction({
+         action_type: 'join_event',
+         entity_type: 'event',
+         entity_id: eventId
+       });
 
        setIsJoined(true);
     } catch (error: any) {
@@ -213,7 +228,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
       <div className="event-details-lux-container">
         {/* Header Actions */}
         <div className="ed-header-nav">
-          <Link href="/" className="ed-back-btn">
+          <Link href={localizeHref("/")} className="ed-back-btn">
             <IoChevronBack size={24} className="rtl-flip" />
             <span>{t.back}</span>
           </Link>

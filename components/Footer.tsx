@@ -6,10 +6,15 @@ import Link from "next/link";
 
 export function Footer() {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  const localizeHref = (href: string) => {
+    if (href === "/") return locale === "" ? "/" : locale;
+    return `${locale}${href}`;
+  };
 
   // Hide footer on messages pages
-  if (pathname?.startsWith("/messages")) {
+  if (pathname === "/messages" || pathname === "/ar/messages" || pathname.startsWith("/messages/") || pathname.startsWith("/ar/messages/")) {
     return null;
   }
 
@@ -18,7 +23,7 @@ export function Footer() {
       <p>&copy; {new Date().getFullYear()} Joyin | {t.builtWith} Next.js</p>
       <div className="footer-links">
         <a href="#">{t.privacy}</a>
-        <Link href="/terms">{t.terms}</Link>
+        <Link href={localizeHref("/terms")}>{t.terms}</Link>
         <a href="#">{t.support}</a>
       </div>
     </footer>

@@ -2,12 +2,15 @@
 
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { getTranslations, type TranslationKeys, type Language } from "./translations";
+import { useRouter, usePathname } from "next/navigation";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   dir: "ltr" | "rtl";
   t: TranslationKeys;
+  locale: string;
+  localizeHref: (href: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -19,6 +22,8 @@ export function LanguageProvider({
   children: React.ReactNode;
   initialLanguage?: Language;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   // Use a state that starts with the server-passed language
   const [language, setLanguageState] = useState<Language>(initialLanguage);
 
@@ -47,10 +52,65 @@ export function LanguageProvider({
     // Update HTML attributes immediately for UI responsiveness
     document.documentElement.lang = lang.split("-")[0];
     document.documentElement.dir = lang === "ar-EG" ? "rtl" : "ltr";
+
+    // Handle URL change to reflect the locale
+    const segments = pathname.split("/");
+    const firstSegment = segments[1];
+    const isAr = firstSegment === "ar";
+    const isEn = firstSegment === "en";
+
+    let newPath = pathname;
+
+    if (lang === "ar-EG") {
+      if (!isAr) {
+        if (isEn) {
+          segments[1] = "ar";
+          newPath = segments.join("/");
+        } else {
+          // If at root, it becomes /ar, if at /about, it becomes /ar/about
+          newPath = "/ar" + (pathname === "/" ? "" : pathname);
+        }
+      }
+    } else {
+      // Switching to English
+      if (isAr) {
+        segments.splice(1, 1);
+        newPath = segments.join("/") || "/";
+      }
+      // If it's already /en, we might want to strip it for "clean" URLs if that's the preference
+      else if (isEn) {
+        segments.splice(1, 1);
+        newPath = segments.join("/") || "/";
+      }
+    }
+
+    if (newPath !== pathname) {
+      router.push(newPath);
+    }
   };
 
   const dir = language === "ar-EG" ? "rtl" : "ltr";
   const t = useMemo(() => getTranslations(language), [language]);
+  const locale = language === "ar-EG" ? "/ar" : "";
+
+  const localizeHref = (href: string) => {
+    if (!href || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("#")) {
+      return href;
+    }
+    // Remove existing locale prefix if any to avoid double prefixing
+    let cleanHref = href;
+    if (cleanHref.startsWith("/ar/") || cleanHref === "/ar") {
+      cleanHref = cleanHref.replace(/^\/ar/, "");
+    } else if (cleanHref.startsWith("/en/") || cleanHref === "/en") {
+      cleanHref = cleanHref.replace(/^\/en/, "");
+    }
+    
+    if (cleanHref === "" || cleanHref === "/") {
+      return locale === "" ? "/" : locale;
+    }
+    
+    return `${locale}${cleanHref.startsWith("/") ? "" : "/"}${cleanHref}`;
+  };
 
   // Sync HTML attributes on every language change (including first client-side load)
   useEffect(() => {
@@ -59,7 +119,7 @@ export function LanguageProvider({
   }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, dir, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, dir, t, locale, localizeHref }}>
       {children}
     </LanguageContext.Provider>
   );

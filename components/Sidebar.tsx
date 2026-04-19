@@ -18,7 +18,12 @@ import TopbarLogo from "./TopbarLogo";
 export function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  const localizeHref = (href: string) => {
+    if (href === "/") return locale === "" ? "/" : locale;
+    return `${locale}${href}`;
+  };
 
   const navItems = [
     { iconFilled: IoHome, iconOutline: IoHomeOutline, label: t.home, href: "/" },
@@ -31,19 +36,21 @@ export function Sidebar() {
   return (
     <div className="sidebar desktop-only">
       <div className="logo-container">
-        <Link href="/">
+        <Link href={localizeHref("/")}>
            <TopbarLogo className="sidebar-logo-svg" />
         </Link>
       </div>
 
       <nav className="nav-menu">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const localizedPath = localizeHref(item.href);
+          const isActive = pathname === localizedPath || (pathname === "/" && item.href === "/");
           const Icon = isActive ? item.iconFilled : item.iconOutline;
+          const targetHref = (!user && item.href !== "/") ? localizeHref("/login") : localizedPath;
           return (
             <Link 
               key={item.href} 
-              href={item.href}
+              href={targetHref}
               className={`nav-item ${isActive ? "active" : ""}`}
             >
               <Icon size={24} className="nav-item-icon" />
@@ -55,7 +62,7 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         {user && (
-          <Link href="/profile" className="user-profile-link">
+          <Link href={localizeHref("/profile")} className="user-profile-link">
             <div className="user-profile-container">
               {user.user_metadata?.avatar_url ? (
                 <Image

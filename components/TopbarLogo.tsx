@@ -4,7 +4,7 @@
  * SVG TopBar Logo — Web port of the mobile topbarLogo.tsx
  * Uses the exact same SVG paths as the RN version.
  */
-export default function TopbarLogo({ className }: { className?: string }) {
+export default function TopbarLogo({ className, style }: { className?: string, style?: React.CSSProperties }) {
   return (
     <svg
       width={103}
@@ -13,6 +13,7 @@ export default function TopbarLogo({ className }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      style={style}
     >
       <g clipPath="url(#clip0_195_1158)">
         <rect y={21.333} width={10.6667} height={10.6667} rx={5.33333} fill="#F53132" />

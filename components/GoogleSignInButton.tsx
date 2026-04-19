@@ -2,10 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 
 export default function GoogleSignInButton() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { signInWithIdToken } = useAuth();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const initializeGoogle = () => {
@@ -30,6 +32,7 @@ export default function GoogleSignInButton() {
             type: "standard",
             text: "signin_with",
             shape: "pill",
+            locale: language.split('-')[0], // 'ar' or 'en'
           });
         }
       } else {

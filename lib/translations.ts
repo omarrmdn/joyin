@@ -112,6 +112,9 @@ type TranslationKeys = {
   signInToAccess: string;
   yourName: string;
   followUs: string;
+  activityLog: string;
+  recentActivity: string;
+  noActivity: string;
 
   // Bug Report
   issueDescription: string;
@@ -274,6 +277,9 @@ const en: TranslationKeys = {
   signInToAccess: "Sign in to access your profile",
   yourName: "Your Name",
   followUs: "Follow Us",
+  activityLog: "Activity Log",
+  recentActivity: "Recent Activity",
+  noActivity: "No activity recorded yet.",
 
   // Bug Report
   issueDescription: "Issue Description",
@@ -434,6 +440,9 @@ const arEG: TranslationKeys = {
   signInToAccess: "سجل دخولك عشان توصل لملفك الشخصي",
   yourName: "اسمك",
   followUs: "تابعنا",
+  activityLog: "سجل النشاط",
+  recentActivity: "النشاط الأخير",
+  noActivity: "مفيش نشاط مسجل حتى الآن.",
 
   // Bug Report
   issueDescription: "وصف المشكلة",

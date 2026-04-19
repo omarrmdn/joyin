@@ -15,7 +15,7 @@ interface SearchResultProps {
 export function SearchResult({ event, index }: SearchResultProps) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { t } = useLanguage();
+  const { t, localizeHref } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
       className={`search-result-item ${event.status === 'canceled' ? 'canceled' : ''}`} 
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <Link href={`/explore/${event.id}`} className="sr-card-link-wrapper">
+      <Link href={localizeHref(`/explore/${event.id}`)} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
           <Image 
             src={imgError || !(event.image_url || event.image) ? "/placeholder-event.svg" : (event.image_url || event.image)} 

@@ -19,9 +19,11 @@ import {
 } from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useMemo, useEffect } from "react";
-import { IoSearchOutline, IoClose } from "react-icons/io5";
+import { IoSearchOutline, IoClose, IoTimeOutline } from "react-icons/io5";
 import { compressImage } from "@/lib/compressImage";
+import { useActions } from "@/hooks/use-actions";
 
 const INTERESTS: string[] = [];
 
@@ -47,12 +49,21 @@ const TikTokIcon = ({ size = 24 }: { size?: number }) => (
 );
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { user, signOut, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const { language, setLanguage, t, localizeHref } = useLanguage();
+  const { logAction, getActions } = useActions();
   const [userInterests, setUserInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(localizeHref("/login"));
+    }
+  }, [user, authLoading, router, localizeHref]);
 
   const menuItems = [
     { icon: IoSettingsOutline, label: t.accountSettings, id: "account" },
+    { icon: IoTimeOutline, label: t.activityLog, id: "activity" },
     { icon: IoBugOutline, label: t.reportAProblem, id: "bug" },
   ];
 
@@ -65,6 +76,22 @@ export default function ProfilePage() {
   const [bugDescription, setBugDescription] = useState("");
   const [bugImages, setBugImages] = useState<string[]>([]);
   const [isSubmittingBug, setIsSubmittingBug] = useState(false);
+  
+  // Activity State
+  const [actions, setActions] = useState<any[]>([]);
+  const [isLoadingActions, setIsLoadingActions] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'activity' && user) {
+      const fetchActions = async () => {
+        setIsLoadingActions(true);
+        const data = await getActions(20);
+        setActions(data);
+        setIsLoadingActions(false);
+      };
+      fetchActions();
+    }
+  }, [activeTab, user, getActions]);
 
   // Edit Profile State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -114,6 +141,11 @@ export default function ProfilePage() {
         
       await supabase.auth.updateUser({
         data: { full_name: tempName }
+      });
+      
+      await logAction({
+        action_type: 'update_profile',
+        metadata: { name: tempName }
       });
       
       setIsEditingProfile(false);
@@ -171,6 +203,10 @@ export default function ProfilePage() {
       
       await supabase.auth.updateUser({
         data: { avatar_url: publicUrl }
+      });
+
+      await logAction({
+        action_type: 'upload_pfp'
       });
       
       window.location.reload();
@@ -501,6 +537,11 @@ export default function ProfilePage() {
                               });
 
                             if (error) throw error;
+
+                            await logAction({
+                              action_type: 'report_bug',
+                              metadata: { description: bugDescription }
+                            });
                             
                             alert(t.reportSubmitted);
                             setBugDescription("");
@@ -518,6 +559,43 @@ export default function ProfilePage() {
                       <p className="bug-help-text">{t.teamResponse}</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            ) : activeTab === 'activity' ? (
+              <div className="activity-log-web-container">
+                <div className="activity-list-lux">
+                  {isLoadingActions ? (
+                    <div className="activity-loading-lux">
+                      <div className="loading-spinner-mini" />
+                      <p>{t.loading}...</p>
+                    </div>
+                  ) : actions.length > 0 ? (
+                    actions.map((action) => (
+                      <div key={action.id} className="activity-item-lux">
+                        <div className="activity-icon-circle">
+                          <IoTimeOutline size={20} />
+                        </div>
+                        <div className="activity-item-content">
+                          <div className="activity-type-text">
+                            {action.action_type.replace(/_/g, ' ').toUpperCase()}
+                          </div>
+                          <div className="activity-meta-text">
+                            {action.entity_type && `${action.entity_type} • `}
+                            {new Date(action.created_at).toLocaleString(language === 'ar-EG' ? 'ar-EG' : 'en-US', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short'
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="empty-activity-lux">
+                      <IoTimeOutline size={48} className="empty-icon-fade" />
+                      <p>{t.noActivity}</p>
+                    </div>
+                  )
+                }
                 </div>
               </div>
             ) : (

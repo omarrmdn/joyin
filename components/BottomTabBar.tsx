@@ -16,7 +16,12 @@ import Image from "next/image";
 export function BottomTabBar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  const localizeHref = (href: string) => {
+    if (href === "/") return locale === "" ? "/" : locale;
+    return `${locale}${href}`;
+  };
 
   const tabs = [
     { href: "/", label: t.home, iconFilled: IoHome, iconOutline: IoHomeOutline },
@@ -29,11 +34,14 @@ export function BottomTabBar() {
   return (
     <nav className="bottom-tab-bar">
       {tabs.map((tab, i) => {
-        const isActive = pathname === tab.href;
+        const localizedPath = localizeHref(tab.href);
+        const isActive = pathname === localizedPath || (pathname === "/" && tab.href === "/");
+
+        const targetHref = (!user && tab.href !== "/") ? localizeHref("/login") : localizedPath;
 
         if (tab.isAdd) {
           return (
-            <Link key="add" href={tab.href} className="tab-item-add" aria-label={t.createEvent}>
+            <Link key="add" href={targetHref} className="tab-item-add" aria-label={t.createEvent}>
               <IoAdd size={32} />
             </Link>
           );
@@ -41,10 +49,9 @@ export function BottomTabBar() {
 
         const Icon = isActive ? tab.iconFilled! : tab.iconOutline!;
         
-        // Special render for profile image
         if (tab.href === "/profile" && user?.user_metadata?.avatar_url) {
           return (
-            <Link key={tab.href} href={tab.href} className={`tab-item ${isActive ? "active" : ""}`}>
+            <Link key={tab.href} href={targetHref} className={`tab-item ${isActive ? "active" : ""}`}>
               <div style={{
                 width: 24, height: 24, borderRadius: "50%", overflow: "hidden", 
                 border: isActive ? "1px solid var(--primary)" : "1px solid var(--gray)"
@@ -57,7 +64,7 @@ export function BottomTabBar() {
         }
 
         return (
-          <Link key={tab.href} href={tab.href} className={`tab-item ${isActive ? "active" : ""}`}>
+          <Link key={tab.href} href={targetHref} className={`tab-item ${isActive ? "active" : ""}`}>
             <Icon size={24} />
             <span className="tab-item-label">{tab.label}</span>
           </Link>

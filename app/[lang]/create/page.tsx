@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/language-context";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 import { 
   IoImageOutline, 
   IoLocationSharp, 
@@ -21,12 +23,23 @@ import {
 } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
+import { useActions } from "@/hooks/use-actions";
 
 type EventType = "onsite" | "online";
 type Gender = "all" | "male" | "female";
 
 export default function CreateEventPage() {
-  const { t } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const { t, language, localizeHref } = useLanguage();
+  const { logAction } = useActions();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(localizeHref("/login"));
+    }
+  }, [user, authLoading, router, localizeHref]);
+
   const [tagSearch, setTagSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
@@ -57,7 +70,8 @@ export default function CreateEventPage() {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [selectedLocationCoords, setSelectedLocationCoords] = useState<{latitude: number; longitude: number} | null>(null);
   const locationDropdownRef = useRef<HTMLDivElement>(null);
-
+  const locationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
   // Clear error when any relevant state changes
   useEffect(() => {
     if (formError) setFormError(null);
@@ -213,8 +227,17 @@ export default function CreateEventPage() {
         }
       }
 
+
+      // Log the action
+      await logAction({
+        action_type: 'create_event',
+        entity_type: 'event',
+        entity_id: eventData.id,
+        metadata: { title: eventData.title }
+      });
+
       alert(t.eventPublished);
-      window.location.href = "/"; // Redirect to home
+      window.location.href = localizeHref("/"); // Redirect to home
     } catch (error: any) {
       console.error("Error publishing event:", error);
       alert(`Failed to publish event: ${error.message}`);
@@ -244,25 +267,25 @@ export default function CreateEventPage() {
       return;
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-    if (!apiKey) return;
-
+    setIsLocationLoading(true);
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${apiKey}&autocomplete=true&limit=5`;
+      const url = `/api/location?q=${encodeURIComponent(query)}&lang=${language}`;
       const response = await fetch(url);
       const json = await response.json();
 
-      if (json.features) {
-        setLocationSuggestions(json.features.map((f: any) => ({
-          id: f.id,
-          description: f.place_name,
-          longitude: f.center[0],
-          latitude: f.center[1]
+      if (json && Array.isArray(json)) {
+        setLocationSuggestions(json.map((f: any) => ({
+          id: f.place_id,
+          description: f.display_name,
+          longitude: parseFloat(f.lon),
+          latitude: parseFloat(f.lat)
         })));
         setShowLocationSuggestions(true);
       }
     } catch (err) {
       console.error("Location autocomplete error:", err);
+    } finally {
+      setIsLocationLoading(false);
     }
   };
 
@@ -270,7 +293,14 @@ export default function CreateEventPage() {
     const val = e.target.value;
     setLocation(val);
     setSelectedLocationCoords(null);
-    fetchLocationSuggestions(val);
+    
+    if (locationTimeoutRef.current) {
+      clearTimeout(locationTimeoutRef.current);
+    }
+    
+    locationTimeoutRef.current = setTimeout(() => {
+      fetchLocationSuggestions(val);
+    }, 400);
   };
 
 
@@ -372,9 +402,15 @@ export default function CreateEventPage() {
                       }}
                       required
                     />
-                    {showLocationSuggestions && locationSuggestions.length > 0 && (
-                      <div className="mobile-results-list" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--card-background)', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '4px', overflow: 'hidden' }}>
-                        {locationSuggestions.map(s => (
+                    {showLocationSuggestions && (locationSuggestions.length > 0 || isLocationLoading) && (
+                      <div className="mobile-results-list" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--card-background)', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '4px', maxHeight: '250px', overflowY: 'auto', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)' }}>
+                        {isLocationLoading && (
+                          <div style={{ padding: '16px', textAlign: 'center', color: 'var(--secondary-text)' }}>
+                            <div className="loading-spinner-small" style={{ marginBottom: '8px' }}></div>
+                            {t.loading}...
+                          </div>
+                        )}
+                        {!isLocationLoading && locationSuggestions.map(s => (
                           <div 
                             key={s.id} 
                             className="result-item"

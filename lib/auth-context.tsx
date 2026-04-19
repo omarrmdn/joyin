@@ -64,27 +64,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [syncUser]);
 
-  const signInWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
-        queryParams: {
-          prompt: "select_account",
-        },
-      },
-    });
-    if (error) {
-      console.error("Error signing in with Google:", error.message);
-    }
-  }, []);
-
   const signInWithIdToken = useCallback(async (idToken: string) => {
     const { error } = await supabase.auth.signInWithIdToken({
       provider: "google",
       token: idToken,
     });
     if (error) throw error;
+  }, []);
+
+  const signInWithGoogle = useCallback(async () => {
+    // Navigate to /login page which renders the GoogleSignInButton (popup-based).
+    // This avoids using Supabase OAuth redirect (which shows supabase.co on Google consent)
+    // and avoids One Tap/FedCM prompt() which fails on localhost.
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   }, []);
 
   const signOut = useCallback(async () => {
