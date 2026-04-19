@@ -10,13 +10,15 @@ export default function GoogleSignInButton() {
   const { language } = useLanguage();
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
     const initializeGoogle = () => {
       if (typeof window !== "undefined" && window.google?.accounts?.id && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-          ux_mode: "popup", // Explicitly use popup for better mobile support
-          itp_support: true, // Support for Safari/iOS
-          use_fedcm_for_prompt: false, // Avoid FedCM issues on mobile
+          ux_mode: "popup",
+          itp_support: true,
+          auto_select: false,
           callback: async (response: any) => {
             if (response.credential) {
               try {
@@ -28,6 +30,8 @@ export default function GoogleSignInButton() {
           },
         });
 
+        // The HTML API (g_id_signin class) will handle the rendering,
+        // but we can also manually trigger it to be sure.
         if (containerRef.current) {
           window.google.accounts.id.renderButton(containerRef.current, {
             theme: "outline",
@@ -35,25 +39,35 @@ export default function GoogleSignInButton() {
             type: "standard",
             text: "signin_with",
             shape: "pill",
-            locale: language.split('-')[0], // 'ar' or 'en'
-            width: 280, // Fixed width helps on mobile
+            locale: language.split('-')[0],
+            width: 280,
           });
         }
-      } else {
-        setTimeout(initializeGoogle, 500);
+        clearInterval(interval);
       }
     };
 
+    interval = setInterval(initializeGoogle, 500);
     initializeGoogle();
+
+    return () => clearInterval(interval);
   }, [signInWithIdToken, language]);
 
   return (
     <div 
       ref={containerRef} 
-      className="google-signin-container"
+      className="google-signin-container g_id_signin"
+      data-type="standard"
+      data-shape="pill"
+      data-theme="outline"
+      data-text="signin_with"
+      data-size="large"
+      data-logo_alignment="left"
+      data-width="280"
       style={{ 
         minHeight: "44px", 
         width: "100%", 
+        maxWidth: "320px",
         display: "flex", 
         justifyContent: "center",
         overflow: "visible" 
