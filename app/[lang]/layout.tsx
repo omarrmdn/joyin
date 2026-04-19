@@ -109,7 +109,7 @@ export default async function RootLayout({
       data-theme="dark"
     >
       <body className="antialiased">
-        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
         <LanguageProvider initialLanguage={language}>
           <AuthProvider>
             <div className="app-shell">
