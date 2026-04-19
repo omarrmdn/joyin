@@ -14,6 +14,9 @@ export default function GoogleSignInButton() {
       if (typeof window !== "undefined" && window.google?.accounts?.id && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
         window.google.accounts.id.initialize({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          ux_mode: "popup", // Explicitly use popup for better mobile support
+          itp_support: true, // Support for Safari/iOS
+          use_fedcm_for_prompt: false, // Avoid FedCM issues on mobile
           callback: async (response: any) => {
             if (response.credential) {
               try {
@@ -33,6 +36,7 @@ export default function GoogleSignInButton() {
             text: "signin_with",
             shape: "pill",
             locale: language.split('-')[0], // 'ar' or 'en'
+            width: 280, // Fixed width helps on mobile
           });
         }
       } else {
@@ -41,7 +45,7 @@ export default function GoogleSignInButton() {
     };
 
     initializeGoogle();
-  }, [signInWithIdToken]);
+  }, [signInWithIdToken, language]);
 
   return (
     <div 
