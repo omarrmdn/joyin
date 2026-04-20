@@ -10,13 +10,13 @@ export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const { t, localizeHref } = useLanguage();
+
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace("/login");
+      router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/messages"))}`);
     }
-  }, [user, authLoading, router]);
-
-  const { t } = useLanguage();
+  }, [user, authLoading, router, localizeHref]);
 
   return (
     <div className="empty-chat-state">

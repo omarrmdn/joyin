@@ -46,7 +46,7 @@ export function Sidebar() {
           const localizedPath = localizeHref(item.href);
           const isActive = pathname === localizedPath || (pathname === "/" && item.href === "/");
           const Icon = isActive ? item.iconFilled : item.iconOutline;
-          const targetHref = (!user && item.href !== "/") ? localizeHref("/login") : localizedPath;
+          const targetHref = (!user && item.href !== "/") ? `${localizeHref("/login")}?redirect=${encodeURIComponent(localizedPath)}` : localizedPath;
           return (
             <Link 
               key={item.href} 

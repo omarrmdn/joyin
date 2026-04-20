@@ -68,7 +68,10 @@ export default function Home() {
               )
             ),
             attendees (
-              user_id
+              user_id,
+              users:user_id (
+                image_url
+              )
             )
           `)
           .order('date', { ascending: true });
@@ -83,7 +86,11 @@ export default function Home() {
               const tr = tag.tag_translations?.find((t: any) => t.language_code === langCode);
               return tr ? tr.name : tag.name;
             }).filter(Boolean) || [],
-            attendees_count: event.attendees?.length || 0
+            attendees_count: event.attendees?.length || 0,
+            attending_avatars: event.attendees
+              ?.map((a: any) => a.users?.image_url)
+              .filter(Boolean)
+              .slice(0, 3) || []
           }));
           setEvents(mappedEvents);
 
@@ -236,7 +243,7 @@ export default function Home() {
               endDate={event.end_date}
               price={event.price === 0 ? t.free : event.price}
               attendingCount={event.attendees_count || 0}
-              attendingAvatars={[]}
+              attendingAvatars={event.attending_avatars || []}
               isOnline={event.is_online}
             />
           ))

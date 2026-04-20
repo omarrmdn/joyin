@@ -57,7 +57,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace(localizeHref("/login"));
+      router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/profile"))}`);
     }
   }, [user, authLoading, router, localizeHref]);
 

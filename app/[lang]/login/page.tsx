@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import TopbarLogo from "@/components/TopbarLogo";
 import { useActions } from "@/hooks/use-actions";
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const { t, localizeHref } = useLanguage();
   const { logAction } = useActions();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,9 +21,10 @@ export default function LoginPage() {
     if (loading) return;
     if (user) {
       logAction({ action_type: 'login' });
-      router.push(localizeHref("/explore"));
+      const redirectTo = searchParams.get('redirect');
+      router.push(redirectTo || localizeHref("/"));
     }
-  }, [user, loading, router, logAction, localizeHref]);
+  }, [user, loading, router, logAction, localizeHref, searchParams]);
 
   if (loading || !mounted) {
     return (

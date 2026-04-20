@@ -32,7 +32,7 @@ export function BottomTabBar() {
         const localizedPath = localizeHref(tab.href);
         const isActive = pathname === localizedPath || (pathname === "/" && tab.href === "/");
 
-        const targetHref = (!user && tab.href !== "/") ? localizeHref("/login") : localizedPath;
+        const targetHref = (!user && tab.href !== "/") ? `${localizeHref("/login")}?redirect=${encodeURIComponent(localizedPath)}` : localizedPath;
 
         if (tab.isAdd) {
           return (

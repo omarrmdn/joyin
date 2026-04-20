@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useActions } from "@/hooks/use-actions";
+import { notifyNewAttendee } from "@/lib/notifications";
 
 interface EventDetailsProps {
   params: Promise<{ id: string }>;
@@ -58,6 +59,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
               tags (
                 name
               )
+            ),
+            attendees (
+              user_id,
+              users:user_id (
+                image_url
+              )
             )
           `)
           .eq('id', eventId)
@@ -68,24 +75,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           const mappedEvent = {
             ...data,
             host: data.users ? { name: data.users.name, avatar: data.users.image_url } : null,
-            tags: data.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || []
+            tags: data.event_tags?.map((et: any) => et.tags?.name).filter(Boolean) || [],
+            attendees_count: data.attendees?.length || 0,
+            attendee_avatars: data.attendees?.map((a: any) => a.users?.image_url).filter(Boolean).slice(0, 3) || []
           };
           setEvent(mappedEvent);
-
-          // Fetch real attendees for PFPs
-          const { data: attendeesData } = await supabase
-            .from('attendees')
-            .select(`
-              users:user_id (
-                image_url
-              )
-            `)
-            .eq('event_id', eventId)
-            .limit(3);
-          
-          if (attendeesData) {
-            setAttendees(attendeesData.map((a: any) => a.users?.image_url).filter(Boolean));
-          }
+          setAttendees(mappedEvent.attendee_avatars);
 
           // Check if user is already joined
           if (user) {
@@ -158,7 +153,28 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
          entity_id: eventId
        });
 
+       // Notify the organizer about the new attendee
+       if (event?.organizer_id && event.organizer_id !== user.id) {
+         await notifyNewAttendee(
+           eventId,
+           event.organizer_id,
+           user.user_metadata?.full_name || user.email?.split('@')[0] || 'Someone'
+         );
+       }
+
        setIsJoined(true);
+       // Update local UI
+       setEvent((prev: any) => ({
+         ...prev,
+         attendees_count: (prev?.attendees_count || 0) + 1
+       }));
+       if (user.user_metadata?.avatar_url || user.user_metadata?.image_url) {
+          setAttendees(prev => {
+            const newAvatar = user.user_metadata?.avatar_url || user.user_metadata?.image_url;
+            if (prev.includes(newAvatar)) return prev;
+            return [...prev, newAvatar].slice(0, 3);
+          });
+       }
     } catch (error: any) {
        console.error("Join error:", error);
        alert(`Failed to join: ${error.message}`);

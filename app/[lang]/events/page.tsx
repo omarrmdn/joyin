@@ -12,12 +12,13 @@ export default function MyEventsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const { t, language, localizeHref } = useLanguage();
+
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace("/login");
+      router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/events"))}`);
     }
-  }, [user, authLoading, router]);
-  const { t, language } = useLanguage();
+  }, [user, authLoading, router, localizeHref]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -48,46 +49,62 @@ export default function MyEventsPage() {
           }
         }
 
-        // Fetch events where any of the user's identities is organizer OR participant
+        // Fetch events where user is the organizer (full date range)
         const { data: organizedData } = await supabase
           .from('events')
           .select('*')
           .in('organizer_id', allUserIds);
           
+        // Fetch events where user is an attendee (include joined_at)
         const { data: attendedData } = await supabase
           .from('attendees')
-          .select('events (*)')
+          .select('joined_at, events (*)')
           .in('user_id', allUserIds);
 
         // Combine and deduplicate
         const combinedMap = new Map();
         
-        const normalizeEvent = (e: any) => {
+        const normalizeEvent = (e: any, userStartDate?: string) => {
           if (!e) return null;
+          const dateNorm = e.date?.split('T')[0];
+          const endDateNorm = e.end_date?.split('T')[0];
           return {
             ...e,
-            date: e.date?.split('T')[0],
-            end_date: e.end_date?.split('T')[0]
+            date: dateNorm,
+            end_date: endDateNorm,
+            // _userStartDate: the date from which this user is relevant for this event
+            _userStartDate: userStartDate && userStartDate > dateNorm ? userStartDate : dateNorm
           };
         };
 
+        // Organizer events: user owns the full range
         (organizedData || []).forEach(e => {
           const norm = normalizeEvent(e);
           if (norm) combinedMap.set(norm.id, norm);
         });
         
+        // Attended events: clip range to joined_at date
         (attendedData || []).forEach(a => {
-          const norm = normalizeEvent(a.events);
-          if (norm) combinedMap.set(norm.id, norm);
+          const joinedAt = a.joined_at ? a.joined_at.split('T')[0] : undefined;
+          const norm = normalizeEvent(a.events, joinedAt);
+          if (norm) {
+            // Only overwrite if not already added as organizer (organizer gets full range)
+            if (!combinedMap.has(norm.id)) {
+              combinedMap.set(norm.id, norm);
+            }
+          }
         });
 
         const combined = Array.from(combinedMap.values());
         setEvents(combined);
         
         if (combined.length > 0) {
-          const todayStr = new Date().toISOString().split('T')[0];
           const datesWithEvents = Array.from(new Set(
-            combined.flatMap(e => e.end_date ? getDaysInRange(e.date, e.end_date) : [e.date])
+            combined.flatMap(e => 
+              e.end_date 
+                ? getDaysInRange(e._userStartDate || e.date, e.end_date) 
+                : [e._userStartDate || e.date]
+            )
           )).sort();
 
           if (datesWithEvents.includes(today)) {
@@ -115,8 +132,13 @@ export default function MyEventsPage() {
     }
   }, [selectedDate]);
 
+  // Only show dates the user actually has events on (using _userStartDate for attended events)
   const availableDates = Array.from(new Set(
-    events.flatMap(e => e.end_date ? getDaysInRange(e.date, e.end_date) : [e.date])
+    events.flatMap(e => 
+      e.end_date 
+        ? getDaysInRange(e._userStartDate || e.date, e.end_date) 
+        : [e._userStartDate || e.date]
+    )
   )).sort();
 
   function getDaysInRange(start: string, end: string) {
@@ -137,9 +159,11 @@ export default function MyEventsPage() {
   const locale = language === "ar-EG" ? "ar-EG" : "en-US";
 
   const filteredEvents = events.filter(e => {
-    // Both e.date and selectedDate are now normalized YYYY-MM-DD
-    if (e.date === selectedDate) return true;
-    if (e.end_date && selectedDate >= e.date && selectedDate <= e.end_date) return true;
+    const userStart = e._userStartDate || e.date;
+    // Single-day event or user's start date matches selected
+    if (userStart === selectedDate && !e.end_date) return true;
+    // Multi-day: check if selected date falls within user's relevant range
+    if (e.end_date && selectedDate >= userStart && selectedDate <= e.end_date) return true;
     return false;
   });
 

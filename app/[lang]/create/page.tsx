@@ -36,7 +36,7 @@ export default function CreateEventPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace(localizeHref("/login"));
+      router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/create"))}`);
     }
   }, [user, authLoading, router, localizeHref]);
 
