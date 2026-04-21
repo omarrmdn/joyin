@@ -43,11 +43,10 @@ export function SearchResult({ event, index }: SearchResultProps) {
     >
       <Link href={localizeHref(`/explore/${event.id}`)} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
-          <Image 
+          <img 
             key={event.image_url || event.image || 'placeholder'}
             src={imgError || !(event.image_url || event.image) ? "/placeholder-event.svg" : (event.image_url || event.image)} 
             alt={event.title}
-            fill
             className="search-result-image"
             onError={() => setImgError(true)}
           />

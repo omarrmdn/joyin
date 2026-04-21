@@ -54,13 +54,11 @@ export function EventCard({
     <Link href={localizeHref(`/explore/${id}`)} className="event-card-link">
       <div className="event-card">
         <div className="event-card-image-container">
-          <Image 
+          <img 
             key={image || 'placeholder'}
             src={imgError || !image ? "/placeholder-event.svg" : image} 
             alt={title} 
-            fill 
             className="event-card-image"
-            sizes="(max-width: 768px) 100vw, 33vw"
             onError={() => setImgError(true)}
           />
           <button 
