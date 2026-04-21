@@ -26,6 +26,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useActions } from "@/hooks/use-actions";
 import { notifyNewAttendee } from "@/lib/notifications";
 
+import { translateTag } from "@/lib/tag-translations";
+
 interface EventDetailsProps {
   params: Promise<{ id: string }>;
 }
@@ -37,7 +39,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { user, signInWithGoogle } = useAuth();
-  const { t, localizeHref } = useLanguage();
+  const { t, localizeHref, language } = useLanguage();
   const { logAction } = useActions();
   const [attendees, setAttendees] = useState<string[]>([]);
   const [imgError, setImgError] = useState(false);
@@ -112,6 +114,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
   const activeEvent = event || {
     title: t.loading,
+    image_url: "",
     image: "",
     location: t.loading,
     date: "...",
@@ -237,7 +240,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
   return (
     <>
-      <div className="topbar-wrapper">
+      <div className="topbar-wrapper hidden-on-mobile">
         <TopBar />
       </div>
       
@@ -255,7 +258,6 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             >
               <IoShareSocialOutline size={20} />
             </button>
-            <button className="ed-action-icon-btn"><IoHeartOutline size={20} /></button>
             <button 
               className="ed-action-icon-btn"
               onClick={() => setIsReportModalOpen(true)}
@@ -271,11 +273,12 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
               <Image 
-                src={imgError || !currentEvent.image_url ? "/placeholder-event.svg" : currentEvent.image_url} 
+                src={imgError || (!currentEvent.image_url && !currentEvent.image) ? "/placeholder-event.svg" : (currentEvent.image_url || currentEvent.image)} 
                 alt={currentEvent.title} 
                 fill 
                 className="ed-hero-image"
                 priority
+                unoptimized={true}
                 onError={() => setImgError(true)}
               />
               <div className="ed-image-overlay" />
@@ -324,7 +327,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
 
               <div className="ed-tags-wrapper">
                 {currentEvent.tags?.map((tag: string) => (
-                  <span key={tag} className="ed-pill-tag">{tag}</span>
+                  <span key={tag} className="ed-pill-tag">{translateTag(tag, language)}</span>
                 ))}
               </div>
 
