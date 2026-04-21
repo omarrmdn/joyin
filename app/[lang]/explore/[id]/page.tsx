@@ -273,13 +273,17 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
               <Image 
-                src={imgError || (!currentEvent.image_url && !currentEvent.image) ? "/placeholder-event.svg" : (currentEvent.image_url || currentEvent.image)} 
-                alt={currentEvent.title} 
+                key={currentEvent.image_url || currentEvent.image || 'placeholder'}
+                src={(imgError || (!currentEvent.image_url && !currentEvent.image)) ? "/placeholder-event.svg" : (currentEvent.image_url || currentEvent.image)} 
+                alt={currentEvent.title || "Event Image"} 
                 fill 
                 className="ed-hero-image"
                 priority
                 unoptimized={true}
-                onError={() => setImgError(true)}
+                onError={() => {
+                  console.error("Event image failed to load:", currentEvent.image_url || currentEvent.image);
+                  setImgError(true);
+                }}
               />
               <div className="ed-image-overlay" />
             </div>
