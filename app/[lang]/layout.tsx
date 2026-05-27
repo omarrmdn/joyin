@@ -5,7 +5,6 @@ import "../globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { Sidebar } from "@/components/Sidebar";
-import { Footer } from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -118,7 +117,6 @@ export default async function RootLayout({
               <Sidebar />
               <main className="main-content-area">
                 {children}
-                <Footer />
               </main>
               <BottomTabBar />
               <GlobalShareModal />
