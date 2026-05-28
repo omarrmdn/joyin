@@ -70,6 +70,7 @@ export default function EditEventPage({ params }: EditEventPageProps) {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Location Autocomplete
@@ -303,12 +304,50 @@ export default function EditEventPage({ params }: EditEventPageProps) {
       });
 
       alert("Event updated successfully!");
-      router.push(localizeHref(`/explore/${eventId}`));
+      router.push(localizeHref(`/event/${eventId}`));
     } catch (error: any) {
       console.error("Error updating event:", error);
       alert(`Failed to update event: ${error.message}`);
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(t.deleteEventConfirm || "Are you sure you want to delete this event? This action cannot be undone.")) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      // Supabase should cascade delete event_tags and other relations if configured,
+      // but let's delete event_tags first just in case to avoid foreign key errors.
+      await supabase
+        .from('event_tags')
+        .delete()
+        .eq('event_id', eventId);
+        
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+        
+      if (error) throw error;
+      
+      await logAction({
+        action_type: 'delete_event',
+        entity_type: 'event',
+        entity_id: eventId,
+        metadata: { title }
+      });
+      
+      alert(t.eventDeleted || "Event deleted successfully.");
+      router.replace(localizeHref("/"));
+    } catch (error: any) {
+      console.error("Error deleting event:", error);
+      alert(`Failed to delete event: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -390,7 +429,7 @@ export default function EditEventPage({ params }: EditEventPageProps) {
             {/* Left Column: Media, Description & Metadata */}
             <div className="form-column column-left">
               <header className="create-header" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <Link href={localizeHref(`/explore/${eventId}`)} className="ed-back-btn" style={{ border: '1px solid var(--border)', background: 'var(--card-background)', padding: '8px', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--foreground)' }}>
+                <Link href={localizeHref(`/event/${eventId}`)} className="ed-back-btn" style={{ border: '1px solid var(--border)', background: 'var(--card-background)', padding: '8px', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--foreground)' }}>
                   <IoChevronBack size={20} className="rtl-flip" />
                 </Link>
                 <h1>{t.editEvent}</h1>
@@ -672,13 +711,24 @@ export default function EditEventPage({ params }: EditEventPageProps) {
                   {formError}
                 </div>
               )}
-              <button 
-                className="publish-btn" 
-                disabled={isPublishing}
-                type="submit"
-              >
-                {isPublishing ? t.updating : t.updateEvent}
-              </button>
+              <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'flex-end' }}>
+                <button 
+                  className="publish-btn" 
+                  disabled={isPublishing || isDeleting}
+                  type="submit"
+                >
+                  {isPublishing ? t.updating : t.updateEvent}
+                </button>
+                <button
+                  type="button"
+                  className="publish-btn delete-btn"
+                  disabled={isPublishing || isDeleting}
+                  onClick={handleDelete}
+                  style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444' }}
+                >
+                  {isDeleting ? (t.deleting || "Deleting...") : (t.deleteEvent || "Delete Event")}
+                </button>
+              </div>
             </div>
           </div>
         </form>

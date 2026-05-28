@@ -25,7 +25,7 @@ export function GlobalShareModal() {
 
   if (!isOpen || !eventData) return null;
 
-  const eventUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/explore/${eventData.id}`;
+  const eventUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/event/${eventData.id}`;
   const message = `I'm going to this 🎟️✨\n${eventData.title}\nJoin me on Joyin 📍🔥\n\n${eventUrl}`;
 
   const handleCopy = () => {

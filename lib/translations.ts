@@ -167,6 +167,10 @@ type TranslationKeys = {
   editEvent: string;
   updateEvent: string;
   updating: string;
+  deleteEventConfirm: string;
+  eventDeleted: string;
+  deleting: string;
+  deleteEvent: string;
 };
 
 const en: TranslationKeys = {
@@ -333,6 +337,10 @@ const en: TranslationKeys = {
   editEvent: "Edit Event",
   updateEvent: "Update Event",
   updating: "Updating...",
+  deleteEventConfirm: "Are you sure you want to delete this event? This action cannot be undone.",
+  eventDeleted: "Event deleted successfully.",
+  deleting: "Deleting...",
+  deleteEvent: "Delete Event",
 };
 
 const arEG: TranslationKeys = {
@@ -499,6 +507,10 @@ const arEG: TranslationKeys = {
   editEvent: "تعديل الفعالية",
   updateEvent: "تحديث الفعالية",
   updating: "جاري التحديث...",
+  deleteEventConfirm: "متأكد إنك عايز تحذف الفعالية دي؟ لا يمكن التراجع عن الخطوة دي.",
+  eventDeleted: "تم حذف الفعالية بنجاح.",
+  deleting: "جاري الحذف...",
+  deleteEvent: "حذف الفعالية",
 };
 
 const translations = {

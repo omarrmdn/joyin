@@ -8,6 +8,7 @@ import { EventCardSkeleton } from "@/components/EventCardSkeleton";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
 import { useActions } from "@/hooks/use-actions";
+import { isEventPassed } from "@/lib/date-utils";
 
 // Module-level cache to persist data across tab switches without full page reload
 let cachedHomeEvents: any[] | null = null;
@@ -98,7 +99,7 @@ export default function Home() {
               ?.map((a: any) => a.users?.image_url)
               .filter(Boolean)
               .slice(0, 3) || []
-          }));
+          })).filter(event => !isEventPassed(event.end_date || event.date, event.end_time || event.time));
 
           cachedHomeEvents = mappedEvents;
           setEvents(mappedEvents);

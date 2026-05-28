@@ -70,8 +70,18 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
             type="text"
             placeholder={t.searchPlaceholder}
             className="search-input"
-            value={searchQuery}
+            defaultValue={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const query = e.currentTarget.value.trim();
+                if (query) {
+                  window.location.href = localizeHref(`/search?q=${encodeURIComponent(query)}`);
+                } else {
+                  window.location.href = localizeHref(`/search`);
+                }
+              }
+            }}
           />
           <button 
             className="location-btn" 

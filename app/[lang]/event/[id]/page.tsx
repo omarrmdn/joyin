@@ -28,6 +28,7 @@ import { useActions } from "@/hooks/use-actions";
 import { notifyNewAttendee } from "@/lib/notifications";
 
 import { translateTag } from "@/lib/tag-translations";
+import { formatEventDate, formatEventTime } from "@/lib/date-utils";
 
 interface EventDetailsProps {
   params: Promise<{ id: string }>;
@@ -382,7 +383,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">{t.date}</span>
                     <span className="ed-detail-value">
-                      {currentEvent.end_date ? `${currentEvent.date} - ${currentEvent.end_date}` : currentEvent.date}
+                      {currentEvent.end_date ? `${formatEventDate(currentEvent.date, language)} - ${formatEventDate(currentEvent.end_date, language)}` : formatEventDate(currentEvent.date, language)}
                     </span>
                   </div>
                 </div>
@@ -394,7 +395,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   <div className="ed-detail-text">
                     <span className="ed-detail-title">{t.time}</span>
                     <span className="ed-detail-value">
-                      {currentEvent.end_time ? `${currentEvent.start_time || currentEvent.time} - ${currentEvent.end_time}` : (currentEvent.start_time || currentEvent.time)}
+                      {currentEvent.end_time ? `${formatEventTime(currentEvent.start_time || currentEvent.time, language)} - ${formatEventTime(currentEvent.end_time, language)}` : formatEventTime(currentEvent.start_time || currentEvent.time, language)}
                     </span>
                   </div>
                 </div>

@@ -7,16 +7,24 @@ import { useLanguage } from "@/lib/language-context";
 import { SearchResult } from "@/components/SearchResult";
 import { SearchResultSkeleton } from "@/components/SearchResultSkeleton";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SearchPage() {
   const { t, language, localizeHref } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
   const inputRef = useRef<HTMLInputElement>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(!!initialQuery);
+  
+  // Filters
+  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [priceFilter, setPriceFilter] = useState<"all" | "free" | "paid">("all");
+  const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     // Auto-focus the search input
@@ -78,16 +86,34 @@ export default function SearchPage() {
   }, [language]);
 
   const filteredEvents = events.filter((event) => {
-    if (!searchQuery.trim()) return false;
-    const query = searchQuery.toLowerCase();
-    const matchesTitle = event.title?.toLowerCase().includes(query);
-    const matchesLocation = event.location?.toLowerCase().includes(query);
-    const matchesTags = event.tags?.some((t: string) =>
-      t.toLowerCase().includes(query)
-    );
-    const matchesDescription = event.description?.toLowerCase().includes(query);
-    return matchesTitle || matchesLocation || matchesTags || matchesDescription;
+    // 1. Text Search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = event.title?.toLowerCase().includes(query);
+      const matchesLocation = event.location?.toLowerCase().includes(query);
+      const matchesTags = event.tags?.some((t: string) =>
+        t.toLowerCase().includes(query)
+      );
+      const matchesDescription = event.description?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesLocation && !matchesTags && !matchesDescription) {
+        return false;
+      }
+    }
+
+    // 2. Tag Filter
+    if (selectedTag && !event.tags?.includes(selectedTag)) return false;
+
+    // 3. Price Filter
+    if (priceFilter === "free" && event.price !== 0) return false;
+    if (priceFilter === "paid" && event.price === 0) return false;
+
+    // 4. Target Audience Filter
+    if (genderFilter !== "all" && event.gender !== genderFilter) return false;
+
+    return true;
   });
+
+  const allTags = Array.from(new Set(events.flatMap(e => e.tags)));
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -131,6 +157,54 @@ export default function SearchPage() {
           )}
         </div>
       </div>
+
+      {/* Filters Bar */}
+      <div className="search-filters-bar">
+        <button 
+          className={`filter-toggle-btn ${showFilters ? 'active' : ''}`}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          {language === 'ar-EG' ? 'تصفية النتائج' : 'Filters'}
+        </button>
+        <div className="search-tags-scroll">
+          <button 
+            className={`search-tag-pill ${!selectedTag ? 'active' : ''}`}
+            onClick={() => setSelectedTag('')}
+          >
+            {t.all}
+          </button>
+          {allTags.map((tag: any) => (
+            <button 
+              key={tag}
+              className={`search-tag-pill ${selectedTag === tag ? 'active' : ''}`}
+              onClick={() => setSelectedTag(selectedTag === tag ? '' : tag)}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {showFilters && (
+        <div className="search-expanded-filters">
+          <div className="filter-group">
+            <span className="filter-label">{language === 'ar-EG' ? 'السعر:' : 'Price:'}</span>
+            <div className="filter-options">
+              <button className={`filter-opt ${priceFilter === 'all' ? 'active' : ''}`} onClick={() => setPriceFilter('all')}>{t.all}</button>
+              <button className={`filter-opt ${priceFilter === 'free' ? 'active' : ''}`} onClick={() => setPriceFilter('free')}>{t.free}</button>
+              <button className={`filter-opt ${priceFilter === 'paid' ? 'active' : ''}`} onClick={() => setPriceFilter('paid')}>{language === 'ar-EG' ? 'مدفوع' : 'Paid'}</button>
+            </div>
+          </div>
+          <div className="filter-group">
+            <span className="filter-label">{t.targetAudience}:</span>
+            <div className="filter-options">
+              <button className={`filter-opt ${genderFilter === 'all' ? 'active' : ''}`} onClick={() => setGenderFilter('all')}>{t.everyone}</button>
+              <button className={`filter-opt ${genderFilter === 'male' ? 'active' : ''}`} onClick={() => setGenderFilter('male')}>{t.malesOnly}</button>
+              <button className={`filter-opt ${genderFilter === 'female' ? 'active' : ''}`} onClick={() => setGenderFilter('female')}>{t.femalesOnly}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results */}
       <div className="search-page-results">
@@ -268,6 +342,104 @@ export default function SearchPage() {
         .search-clear-btn:hover {
           background: var(--dark-gray);
           color: var(--foreground);
+        }
+
+        .search-filters-bar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--border);
+          background: var(--background);
+        }
+
+        .filter-toggle-btn {
+          background: var(--card-background);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 8px 16px;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--foreground);
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        .filter-toggle-btn.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
+        }
+
+        .search-tags-scroll {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .search-tags-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .search-tag-pill {
+          background: var(--card-background);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 6px 14px;
+          font-size: 13px;
+          color: var(--foreground);
+          white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .search-tag-pill.active {
+          background: var(--foreground);
+          color: var(--background);
+          border-color: var(--foreground);
+        }
+
+        .search-expanded-filters {
+          padding: 16px;
+          background: var(--card-background);
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .filter-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--secondary-text);
+        }
+
+        .filter-options {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .filter-opt {
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 6px 16px;
+          font-size: 13px;
+          color: var(--foreground);
+          cursor: pointer;
+        }
+
+        .filter-opt.active {
+          background: var(--primary);
+          color: white;
+          border-color: var(--primary);
         }
 
         .search-page-results {

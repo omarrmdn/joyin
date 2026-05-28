@@ -2,7 +2,8 @@
 
 import { shareEvent } from "@/lib/share";
 import { useLanguage } from "@/lib/language-context";
-import { IoCalendarSharp, IoLocationSharp, IoShareSocialOutline, IoGlobeOutline } from "react-icons/io5";
+import { IoLocationSharp, IoShareSocialOutline, IoGlobeOutline, IoCalendarOutline } from "react-icons/io5";
+import { formatEventDate } from "@/lib/date-utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -32,7 +33,7 @@ export function EventCard({
   attendingAvatars = [],
   isOnline = false,
 }: EventCardProps) {
-  const { t, locale } = useLanguage();
+  const { t, locale, language } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
   const localizeHref = (href: string) => {
@@ -51,7 +52,7 @@ export function EventCard({
   const showOnlineIcon = isOnline || location?.toLowerCase() === "online";
 
   return (
-    <Link href={localizeHref(`/explore/${id}`)} className="event-card-link">
+    <Link href={localizeHref(`/event/${id}`)} className="event-card-link">
       <div className="event-card">
         <div className="event-card-image-container">
           <img 
@@ -80,10 +81,12 @@ export function EventCard({
               <span className="event-card-info-text">{displayLocation}</span>
             </div>
             <div className="event-card-info-item">
-              <IoCalendarSharp size={16} />
-              <span className="event-card-info-text">
-                {endDate ? `${date} - ${endDate}` : date}
-              </span>
+              <div className="event-date">
+                <IoCalendarOutline className="date-icon" size={16} />
+                <span className="event-card-info-text">
+                  {endDate ? `${formatEventDate(date, language)} - ${formatEventDate(endDate, language)}` : formatEventDate(date, language)}
+                </span>
+              </div>
             </div>
           </div>
 

@@ -49,14 +49,14 @@ export default function NotificationsPage() {
       case "recommendation":
       case "event_update":
         if (data.event_id) {
-          router.push(`/explore/${data.event_id}`);
+          router.push(`/event/${data.event_id}`);
         }
         break;
 
       case "question":
       case "message":
         if (data.event_id) {
-          router.push(`/explore/${data.event_id}`);
+          router.push(`/event/${data.event_id}`);
         } else {
           router.push("/messages");
         }

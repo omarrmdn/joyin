@@ -41,7 +41,7 @@ export function SearchResult({ event, index }: SearchResultProps) {
       className={`search-result-item ${event.status === 'canceled' ? 'canceled' : ''}`} 
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <Link href={localizeHref(`/explore/${event.id}`)} className="sr-card-link-wrapper">
+      <Link href={localizeHref(`/event/${event.id}`)} className="sr-card-link-wrapper">
         <div className="search-result-image-wrapper">
           <img 
             key={event.image_url || event.image || 'placeholder'}
