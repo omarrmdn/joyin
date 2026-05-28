@@ -310,7 +310,11 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                   )}
                   <div className="ed-host-details">
                     <span className="ed-host-label">{t.organizer}</span>
-                    <span className="ed-host-name-mini">{currentEvent.host?.name || t.organizer}</span>
+                    <span className="ed-host-name-mini">
+                      {user?.id && event?.organizer_id && user.id === event.organizer_id 
+                        ? t.you 
+                        : (currentEvent.host?.name || t.organizer)}
+                    </span>
                   </div>
                 </div>
 
