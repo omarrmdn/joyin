@@ -42,24 +42,19 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
 
   return (
     <div className="topbar-container">
-      {/* Mobile-only header row: Logo + Notifications */}
+      {/* Mobile-only header row: Logo + Search link + Notifications */}
       <div className="mobile-only topbar-mobile-header">
         <Link href={localizeHref("/")} className="topbar-logo-link">
           <TopbarLogo className="topbar-logo-svg" />
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button 
+          <Link 
+            href={localizeHref("/search")}
             className="icon-btn notification-btn" 
-            onClick={() => {
-              const searchEl = document.querySelector('.topbar-search');
-              if (searchEl) {
-                searchEl.classList.toggle('mobile-open');
-              }
-            }}
             aria-label={t.searchPlaceholder}
           >
             <IoSearchOutline size={26} />
-          </button>
+          </Link>
           <Link href={localizeHref("/notifications")} className="icon-btn notification-btn" aria-label={t.notifications}>
             <IoNotificationsOutline size={28} />
             {unreadCount > 0 && <span className="notification-badge" />}
@@ -68,7 +63,7 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
       </div>
 
       <div className="topbar-inner">
-        {/* Center: Search (Desktop & Mobile styled separately in CSS) */}
+        {/* Center: Search (Desktop only) */}
         <div className="topbar-search">
           <IoSearchOutline size={20} className="search-icon" />
           <input

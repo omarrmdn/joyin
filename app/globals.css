@@ -762,19 +762,8 @@ button {
 
   .topbar-search {
     display: none !important;
-    max-width: 100% !important;
-    margin-top: 16px !important;
-    height: 50px !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-    background: var(--background) !important;
-    padding: 0 14px !important;
-    gap: 10px !important;
-    border-radius: 25px !important;
   }
 
-  .topbar-search.mobile-open {
-    display: flex !important;
-  }
 
   .location-btn {
     width: 32px !important;
@@ -859,26 +848,29 @@ button {
   }
 
   .search-result-content {
-    padding: 0 0 0 15px !important;
-    height: 100px !important;
+    padding: 0 12px !important;
+    min-height: 90px !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
     justify-content: space-between !important;
-    gap: 0 !important;
+    gap: 4px !important;
     flex: 1 !important;
   }
 
   .sr-title {
-    font-size: 17px !important;
+    font-size: 16px !important;
   }
 
   .sr-info-row-flex {
-    flex-direction: row !important;
-    gap: 10px !important;
+    flex-direction: column !important;
+    gap: 4px !important;
     margin-top: 4px;
   }
 
   .sr-info-item {
     width: auto !important;
-    max-width: 50%;
+    max-width: 100% !important;
   }
 
   .sr-price {
@@ -940,6 +932,20 @@ button {
   }
   .avatar-wrapper-lux {
     margin: 0 auto 16px !important;
+  }
+
+  /* Notifications Mobile Overrides */
+  .notifications-header h1 {
+    display: none !important;
+  }
+  .notifications-header {
+    padding: 16px 20px !important;
+  }
+
+  /* Header Logo Mobile Overrides */
+  .topbar-logo-svg {
+    width: 95px !important;
+    height: auto !important;
   }
 }
 
@@ -1883,13 +1889,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 32px;
   }
   
   .profile-header-main {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
   .profile-stats-lux {
@@ -4167,6 +4175,65 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .share-copy-btn.copied {
   background: var(--success);
+}
+
+.share-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.share-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--secondary-text);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px;
+}
+
+.share-option-btn:hover {
+  color: var(--foreground);
+}
+
+.share-option-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: var(--transition);
+}
+
+.share-option-icon.whatsapp {
+  background: #25d366;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+.share-option-icon.telegram {
+  background: #0088cc;
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.2);
+}
+
+.share-option-icon.copy-link {
+  background: var(--primary);
+  box-shadow: 0 4px 12px var(--primary-transparent);
+}
+
+.share-option-btn:hover .share-option-icon {
+  transform: translateY(-4px) scale(1.05);
 }
 
 /* ============================================

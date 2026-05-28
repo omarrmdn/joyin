@@ -164,6 +164,9 @@ type TranslationKeys = {
   support: string;
   builtWith: string;
   egp: string;
+  editEvent: string;
+  updateEvent: string;
+  updating: string;
 };
 
 const en: TranslationKeys = {
@@ -327,6 +330,9 @@ const en: TranslationKeys = {
   support: "Support",
   builtWith: "Built with",
   egp: "EGP",
+  editEvent: "Edit Event",
+  updateEvent: "Update Event",
+  updating: "Updating...",
 };
 
 const arEG: TranslationKeys = {
@@ -490,6 +496,9 @@ const arEG: TranslationKeys = {
   support: "الدعم",
   builtWith: "صُنع بـ",
   egp: "ج.م",
+  editEvent: "تعديل الفعالية",
+  updateEvent: "تحديث الفعالية",
+  updating: "جاري التحديث...",
 };
 
 const translations = {

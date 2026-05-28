@@ -258,13 +258,15 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
             >
               <IoShareSocialOutline size={20} />
             </button>
-            <button 
-              className="ed-action-icon-btn"
-              onClick={() => setIsReportModalOpen(true)}
-              title={t.reportEvent}
-            >
-              <IoFlagOutline size={20} />
-            </button>
+            {(!event || user?.id !== event.organizer_id) && (
+              <button 
+                className="ed-action-icon-btn"
+                onClick={() => setIsReportModalOpen(true)}
+                title={t.reportEvent}
+              >
+                <IoFlagOutline size={20} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -272,16 +274,19 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
           {/* Left Column: Visuals & Main Content */}
           <div className="ed-main-column">
             <div className="ed-hero-image-wrapper">
-              <img 
-                key={currentEvent.image_url || currentEvent.image || 'placeholder'}
-                src={(imgError || (!currentEvent.image_url && !currentEvent.image)) ? "/placeholder-event.svg" : (currentEvent.image_url || currentEvent.image)} 
-                alt={currentEvent.title || "Event Image"} 
-                className="ed-hero-image"
-                onError={() => {
-                  console.error("Event image failed to load:", currentEvent.image_url || currentEvent.image);
-                  setImgError(true);
-                }}
-              />
+              {loading ? (
+                <div className="ed-hero-image-skeleton" style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+              ) : (
+                <img 
+                  src={imgError ? "/placeholder-event.svg" : (event?.image_url || event?.image || "/placeholder-event.svg")} 
+                  alt={event?.title || "Event Image"} 
+                  className="ed-hero-image"
+                  onError={() => {
+                    console.error("Event image failed to load:", event?.image_url || event?.image);
+                    setImgError(true);
+                  }}
+                />
+              )}
             </div>
 
             <div className="ed-info-body">
@@ -347,7 +352,7 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                     ? t.free 
                     : `${typeof currentEvent.price === 'number' ? Math.abs(currentEvent.price) : currentEvent.price} ${t.egp}`}
                 </span>
-                {String(currentEvent.price).toLowerCase() === "free" && (
+                {String(currentEvent.price).toLowerCase() === "free" && (!event || user?.id !== event.organizer_id) && (
                   <div className="ed-free-notice">
                     <IoAlertCircleOutline size={22} className="ed-free-icon" />
                     <p className="ed-free-notice-text">
@@ -402,15 +407,29 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                 </div>
               </div>
 
-              <button 
-                className={`ed-join-btn ${isJoined ? 'joined' : ''}`}
-                onClick={handleJoin}
-                disabled={isJoining || isJoined}
-              >
-                {isJoining ? t.joining : isJoined ? t.joined : t.join}
-              </button>
+              {loading ? (
+                <button className="ed-join-btn" disabled>
+                  {t.loading}
+                </button>
+              ) : user?.id === event?.organizer_id ? (
+                <Link 
+                  href={localizeHref(`/edit/${eventId}`)} 
+                  className="ed-join-btn"
+                  style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}
+                >
+                  {t.editEvent}
+                </Link>
+              ) : (
+                <button 
+                  className={`ed-join-btn ${isJoined ? 'joined' : ''}`}
+                  onClick={handleJoin}
+                  disabled={isJoining || isJoined}
+                >
+                  {isJoining ? t.joining : isJoined ? t.joined : t.join}
+                </button>
+              )}
               
-              <p className="ed-hint">{t.secureSpot}</p>
+              <p className="ed-hint">{user?.id === event?.organizer_id ? "" : t.secureSpot}</p>
               
 
             </div>
