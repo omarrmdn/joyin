@@ -9,6 +9,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 
+// Module-level cache to persist data across tab switches without full page reload
+let cachedMyEvents: any[] | null = null;
+let cachedSelectedDate: string = "";
+
 export default function MyEventsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -20,9 +24,9 @@ export default function MyEventsPage() {
       router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/events"))}`);
     }
   }, [user, authLoading, router, localizeHref]);
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [events, setEvents] = useState<any[]>(cachedMyEvents || []);
+  const [loading, setLoading] = useState(!cachedMyEvents);
+  const [selectedDate, setSelectedDate] = useState<string>(cachedSelectedDate || "");
   const sliderRef = useRef<HTMLDivElement>(null);
   
   const today = (() => {
@@ -34,7 +38,9 @@ export default function MyEventsPage() {
   useEffect(() => {
     async function fetchMyEvents() {
       if (!user) return;
-      setLoading(true);
+      if (!cachedMyEvents) {
+        setLoading(true);
+      }
       try {
         let allUserIds = [user.id];
         
@@ -97,6 +103,7 @@ export default function MyEventsPage() {
         });
 
         const combined = Array.from(combinedMap.values());
+        cachedMyEvents = combined;
         setEvents(combined);
         
         if (combined.length > 0) {
@@ -104,11 +111,17 @@ export default function MyEventsPage() {
             combined.map(e => e._userStartDate || e.date)
           )).sort();
 
+          let defaultDate = "";
           if (datesWithEvents.includes(today)) {
-            setSelectedDate(today);
+            defaultDate = today;
           } else {
             const nextDate = datesWithEvents.find(d => d >= today);
-            setSelectedDate(nextDate || datesWithEvents[0]);
+            defaultDate = nextDate || datesWithEvents[0];
+          }
+
+          if (!cachedSelectedDate || !datesWithEvents.includes(cachedSelectedDate)) {
+            cachedSelectedDate = defaultDate;
+            setSelectedDate(defaultDate);
           }
         }
       } catch (error) {
@@ -184,7 +197,10 @@ export default function MyEventsPage() {
                 <button 
                   key={date} 
                   className={`day-square-card ${isSelected ? 'active' : ''} ${isToday ? 'is-today' : ''}`}
-                  onClick={() => setSelectedDate(date)}
+                  onClick={() => {
+                    cachedSelectedDate = date;
+                    setSelectedDate(date);
+                  }}
                 >
                   <span className="day-num">{dayNum}</span>
                   <span className="day-name">{isToday ? t.today : dayName}</span>

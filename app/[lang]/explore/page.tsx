@@ -8,21 +8,25 @@ import { IoSearchOutline, IoLocationSharp, IoOptionsOutline } from "react-icons/
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
 
+// Module-level cache to persist data across tab switches without full page reload
+let cachedEvents: any[] | null = null;
+let cachedTags: string[] | null = null;
+
 export default function ExplorePage() {
-  const [events, setEvents] = useState<any[]>([]);
-  const [tags, setTags] = useState<string[]>(["All"]);
-  const [activeTag, setActiveTag] = useState("All");
+  const { t } = useLanguage();
+  const [events, setEvents] = useState<any[]>(cachedEvents || []);
+  const [tags, setTags] = useState<string[]>(cachedTags || [t?.all || "All"]);
+  const [activeTag, setActiveTag] = useState(t?.all || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
+  const [loading, setLoading] = useState(!cachedEvents);
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true);
+      if (!cachedEvents) {
+        setLoading(true);
+      }
       try {
-
-
         const { data: eventsData } = await supabase.from('events').select(`
           *,
           event_tags (tags (name)),
@@ -44,6 +48,8 @@ export default function ExplorePage() {
               .filter(Boolean)
               .slice(0, 3) || []
           }));
+          
+          cachedEvents = mappedEvents;
           setEvents(mappedEvents);
 
           const uniqueTags = new Set<string>();
@@ -51,7 +57,10 @@ export default function ExplorePage() {
             event.tags.forEach((tag: string) => uniqueTags.add(tag));
           });
           const sortedTags = Array.from(uniqueTags).sort();
-          setTags([t.all, ...sortedTags]);
+          const mappedTags = [t.all, ...sortedTags];
+          
+          cachedTags = mappedTags;
+          setTags(mappedTags);
         }
       } catch (error) {
         console.error(error);
@@ -60,7 +69,7 @@ export default function ExplorePage() {
       }
     }
     fetchData();
-  }, []);
+  }, [t.all]);
 
   const filteredEvents = events.filter(event => {
     const matchesTag = activeTag === t.all || event.tags?.includes(activeTag);

@@ -9,13 +9,17 @@ import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
 import { useActions } from "@/hooks/use-actions";
 
+// Module-level cache to persist data across tab switches without full page reload
+let cachedHomeEvents: any[] | null = null;
+let cachedHomeTags: string[] | null = null;
+
 export default function Home() {
   const { t, language } = useLanguage();
   const [activeTag, setActiveTag] = useState(t.all);
   const [searchQuery, setSearchQuery] = useState("");
-  const [events, setEvents] = useState<any[]>([]);
-  const [tags, setTags] = useState<string[]>([t.all, t.nearMe]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<any[]>(cachedHomeEvents || []);
+  const [tags, setTags] = useState<string[]>(cachedHomeTags || [t.all, t.nearMe]);
+  const [loading, setLoading] = useState(!cachedHomeEvents);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const { logAction } = useActions();
 
@@ -35,7 +39,9 @@ export default function Home() {
     });
 
     async function fetchData() {
-      setLoading(true);
+      if (!cachedHomeEvents) {
+        setLoading(true);
+      }
       try {
         // 1. Fetch ALL tags once to build a mapping for language syncing
         const { data: allTagsData } = await supabase
@@ -93,6 +99,8 @@ export default function Home() {
               .filter(Boolean)
               .slice(0, 3) || []
           }));
+
+          cachedHomeEvents = mappedEvents;
           setEvents(mappedEvents);
 
           const uniqueTagsLabels = new Set<string>();
@@ -100,7 +108,9 @@ export default function Home() {
             event.tags.forEach((tag: string) => uniqueTagsLabels.add(tag));
           });
           const sortedTags = Array.from(uniqueTagsLabels).sort();
-          setTags([t.all, t.nearMe, ...sortedTags]);
+          const mappedTags = [t.all, t.nearMe, ...sortedTags];
+          cachedHomeTags = mappedTags;
+          setTags(mappedTags);
 
           // SYNC ACTIVE TAG: General fix for ALL tags
           setActiveTag(prev => {
@@ -108,9 +118,6 @@ export default function Home() {
             if (prev === "Near me" || prev === "قريب مني") return t.nearMe;
             
             // For database tags, we need to find the equivalent label in the new language
-            // Since we don't know the "previous" language easily here, we can try to find 
-            // the tag in the previous language and map it to its ID, then back to the new label.
-            // But a simpler way since tags are unique: check if the 'prev' is a key or value in our mapping
             if (allTagsData) {
               const tagObj = allTagsData.find((tag: any) => {
                 const enName = tag.name;

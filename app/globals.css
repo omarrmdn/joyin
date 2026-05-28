@@ -3086,7 +3086,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    ============================================ */
 @media (max-width: 1024px) {
   .event-details-lux-container {
-    padding: 0 0 140px; /* Space for sticky button */
+    padding: 0 0 40px;
     max-width: 100%;
   }
 
@@ -3217,15 +3217,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 
   .ed-join-btn {
-    position: fixed;
-    bottom: 24px;
-    left: 20px;
-    right: 20px;
-    width: calc(100% - 40px);
+    position: static;
+    width: 100%;
     padding: 18px;
     font-size: 18px;
     box-shadow: none;
-    z-index: 1001;
+    margin-top: 8px;
   }
 
   .ed-join-btn.joined {

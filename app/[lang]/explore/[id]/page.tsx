@@ -9,7 +9,8 @@ import {
   IoHeartOutline,
   IoLocationSharp,
   IoShareSocialOutline,
-  IoGlobeOutline
+  IoGlobeOutline,
+  IoPeopleOutline
 } from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
@@ -409,6 +410,20 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
                     </span>
                   </div>
                 </div>
+
+                {currentEvent.gender && (
+                  <div className="ed-detail-item">
+                    <div className="ed-detail-icon-box">
+                      <IoPeopleOutline size={20} />
+                    </div>
+                    <div className="ed-detail-text">
+                      <span className="ed-detail-title">{t.targetAudience}</span>
+                      <span className="ed-detail-value">
+                        {currentEvent.gender === 'male' ? t.malesOnly : currentEvent.gender === 'female' ? t.femalesOnly : t.everyone}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {loading ? (

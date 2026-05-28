@@ -19,10 +19,35 @@ interface CredentialResponse {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getCachedSession() {
+  if (typeof window === "undefined") return null;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("sb-") && key.endsWith("-auth-token")) {
+        const value = localStorage.getItem(key);
+        if (value) {
+          const parsed = JSON.parse(value);
+          if (parsed && parsed.user && parsed.access_token) {
+            const expiresAt = parsed.expires_at;
+            if (expiresAt && expiresAt > Date.now() / 1000) {
+              return parsed;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error reading cached session", e);
+  }
+  return null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedSession();
+  const [user, setUser] = useState<User | null>(cached?.user ?? null);
+  const [session, setSession] = useState<Session | null>(cached ?? null);
+  const [loading, setLoading] = useState(!cached);
   const initializationStarted = useRef(false);
 
   const syncUser = useCallback(async (user: User | null) => {
