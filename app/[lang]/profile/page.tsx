@@ -63,7 +63,6 @@ export default function ProfilePage() {
 
   const menuItems = [
     { icon: IoSettingsOutline, label: t.accountSettings, id: "account" },
-    { icon: IoTimeOutline, label: t.activityLog, id: "activity" },
     { icon: IoBugOutline, label: t.reportAProblem, id: "bug" },
   ];
 
@@ -77,21 +76,7 @@ export default function ProfilePage() {
   const [bugImages, setBugImages] = useState<string[]>([]);
   const [isSubmittingBug, setIsSubmittingBug] = useState(false);
   
-  // Activity State
-  const [actions, setActions] = useState<any[]>([]);
-  const [isLoadingActions, setIsLoadingActions] = useState(false);
 
-  useEffect(() => {
-    if (activeTab === 'activity' && user) {
-      const fetchActions = async () => {
-        setIsLoadingActions(true);
-        const data = await getActions(20);
-        setActions(data);
-        setIsLoadingActions(false);
-      };
-      fetchActions();
-    }
-  }, [activeTab, user, getActions]);
 
   // Edit Profile State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -307,17 +292,7 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          <div className="profile-stats-lux">
-            <div className="stat-lux">
-              <span className="stat-label-lux">{t.spent}</span>
-              <span className="stat-value-lux">{stats.spent} {t.egp}</span>
-            </div>
-            <div className="stat-divider-lux" />
-            <div className="stat-lux">
-              <span className="stat-label-lux">{t.earned}</span>
-              <span className="stat-value-lux">{stats.earned} {t.egp}</span>
-            </div>
-          </div>
+
         </header>
 
         <div className="profile-tabs-nav">
@@ -459,7 +434,7 @@ export default function ProfilePage() {
                         <IoLogOutOutline size={20} className="text-error" style={{ color: 'var(--error)' }} />
                         <h2 className="section-title" style={{ marginBottom: 0 }}>{t.accountSecurity}</h2>
                       </div>
-                      <button className="signout-btn" onClick={() => signOut()}>
+                      <button className="signout-btn" onClick={() => signOut()} style={{ width: 'fit-content', padding: '10px 24px', margin: '0 auto', display: 'flex' }}>
                         <IoLogOutOutline size={22} />
                         <span>{t.signOut}</span>
                       </button>
@@ -561,43 +536,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-            ) : activeTab === 'activity' ? (
-              <div className="activity-log-web-container">
-                <div className="activity-list-lux">
-                  {isLoadingActions ? (
-                    <div className="activity-loading-lux">
-                      <div className="loading-spinner-mini" />
-                      <p>{t.loading}...</p>
-                    </div>
-                  ) : actions.length > 0 ? (
-                    actions.map((action) => (
-                      <div key={action.id} className="activity-item-lux">
-                        <div className="activity-icon-circle">
-                          <IoTimeOutline size={20} />
-                        </div>
-                        <div className="activity-item-content">
-                          <div className="activity-type-text">
-                            {action.action_type.replace(/_/g, ' ').toUpperCase()}
-                          </div>
-                          <div className="activity-meta-text">
-                            {action.entity_type && `${action.entity_type} • `}
-                            {new Date(action.created_at).toLocaleString(language === 'ar-EG' ? 'ar-EG' : 'en-US', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short'
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="empty-activity-lux">
-                      <IoTimeOutline size={48} className="empty-icon-fade" />
-                      <p>{t.noActivity}</p>
-                    </div>
-                  )
-                }
-                </div>
-              </div>
+
             ) : (
               <div className="tab-placeholder-content">
                 <div className="placeholder-card-lux">
@@ -608,24 +547,7 @@ export default function ProfilePage() {
             )}
           </div>
         
-        <section className="follow-us-section">
-          <div className="follow-header-lux">
-            <div className="follow-line" />
-            <span className="follow-title">{t.followUs}</span>
-            <div className="follow-line" />
-          </div>
-          <div className="social-links-lux">
-            <a href="https://instagram.com/eventaat" target="_blank" rel="noopener noreferrer" className="social-icon-box-lux">
-              <InstagramIcon size={24} />
-            </a>
-            <a href="https://tiktok.com/@eventaat" target="_blank" rel="noopener noreferrer" className="social-icon-box-lux">
-              <TikTokIcon size={24} />
-            </a>
-            <a href="https://x.com/eventaat" target="_blank" rel="noopener noreferrer" className="social-icon-box-lux">
-              <TwitterIcon size={24} />
-            </a>
-          </div>
-        </section>
+
       </div>
     </div>
   );

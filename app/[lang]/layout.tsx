@@ -118,7 +118,6 @@ export default async function RootLayout({
               <Sidebar />
               <main className="main-content-area">
                 {children}
-                <Footer />
               </main>
               <BottomTabBar />
               <GlobalShareModal />

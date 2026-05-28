@@ -48,11 +48,18 @@ export function TopBar({ searchQuery = "", onSearchChange, onLocationPress }: To
           <TopbarLogo className="topbar-logo-svg" />
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {!user && (
-            <button onClick={() => signInWithGoogle()} className="icon-btn" aria-label={t.signIn}>
-              <IoLogInOutline size={24} />
-            </button>
-          )}
+          <button 
+            className="icon-btn notification-btn" 
+            onClick={() => {
+              const searchEl = document.querySelector('.topbar-search');
+              if (searchEl) {
+                searchEl.classList.toggle('mobile-open');
+              }
+            }}
+            aria-label={t.searchPlaceholder}
+          >
+            <IoSearchOutline size={26} />
+          </button>
           <Link href={localizeHref("/notifications")} className="icon-btn notification-btn" aria-label={t.notifications}>
             <IoNotificationsOutline size={28} />
             {unreadCount > 0 && <span className="notification-badge" />}

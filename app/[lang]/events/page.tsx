@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
 import { SearchResult } from "@/components/SearchResult";
+import { SearchResultSkeleton } from "@/components/SearchResultSkeleton";
 import { IoCalendarOutline } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
@@ -100,11 +101,7 @@ export default function MyEventsPage() {
         
         if (combined.length > 0) {
           const datesWithEvents = Array.from(new Set(
-            combined.flatMap(e => 
-              e.end_date 
-                ? getDaysInRange(e._userStartDate || e.date, e.end_date) 
-                : [e._userStartDate || e.date]
-            )
+            combined.map(e => e._userStartDate || e.date)
           )).sort();
 
           if (datesWithEvents.includes(today)) {
@@ -134,11 +131,7 @@ export default function MyEventsPage() {
 
   // Only show dates the user actually has events on (using _userStartDate for attended events)
   const availableDates = Array.from(new Set(
-    events.flatMap(e => 
-      e.end_date 
-        ? getDaysInRange(e._userStartDate || e.date, e.end_date) 
-        : [e._userStartDate || e.date]
-    )
+    events.map(e => e._userStartDate || e.date)
   )).sort();
 
   function getDaysInRange(start: string, end: string) {
@@ -202,7 +195,13 @@ export default function MyEventsPage() {
         </div>
 
         <div className="events-vertical-list">
-          {filteredEvents.length > 0 ? (
+          {loading ? (
+            <>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SearchResultSkeleton key={i} />
+              ))}
+            </>
+          ) : filteredEvents.length > 0 ? (
             filteredEvents.map((event, index) => (
               <SearchResult key={event.id} event={event} index={index} />
             ))

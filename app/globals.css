@@ -639,9 +639,7 @@ button {
   left: 0;
   right: 0;
   height: 70px;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #000000;
   border-top: 1px solid var(--border);
   align-items: center;
   justify-content: space-around;
@@ -763,6 +761,7 @@ button {
   }
 
   .topbar-search {
+    display: none !important;
     max-width: 100% !important;
     margin-top: 16px !important;
     height: 50px !important;
@@ -771,6 +770,10 @@ button {
     padding: 0 14px !important;
     gap: 10px !important;
     border-radius: 25px !important;
+  }
+
+  .topbar-search.mobile-open {
+    display: flex !important;
   }
 
   .location-btn {
@@ -891,6 +894,52 @@ button {
     gap: 12px;
     text-align: center;
     margin-bottom: 80px;
+  }
+
+  /* Create Event Mobile Overrides */
+  .create-container {
+    padding: 20px 20px 100px !important; /* Reduces space above the title */
+  }
+  .create-header {
+    margin-bottom: 12px !important; /* Reduces space below the title */
+  }
+  .create-header h1 {
+    font-size: 28px !important;
+  }
+  .form-group textarea {
+    height: 100px !important; /* Reduce description box height */
+  }
+  .form-footer-content {
+    margin-top: 16px !important; /* Reduce space above target audience */
+  }
+
+  /* My Events Mobile Overrides */
+  .events-header-simple {
+    display: none !important; /* Remove title on mobile */
+  }
+  .search-result-image-wrapper {
+    width: 90px !important; /* Reduced by 10% from 100px */
+    height: 90px !important;
+  }
+  .events-web-container {
+    padding: 16px 16px 100px !important; /* Wide the event cards by reducing padding */
+  }
+
+  /* Profile Page Mobile Overrides */
+  .profile-header-main {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .profile-info-lux {
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .profile-name-edit-row {
+    justify-content: center !important;
+  }
+  .avatar-wrapper-lux {
+    margin: 0 auto 16px !important;
   }
 }
 
@@ -4416,4 +4465,58 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+.skeleton {
+  pointer-events: none;
+}
+
+.skeleton-img {
+  background: var(--dark-gray);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-text {
+  background: var(--dark-gray);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 80%;
+  margin-bottom: 8px;
+}
+
+.skeleton-info {
+  height: 16px;
+  width: 60%;
+  margin-bottom: 6px;
+}
+
+.skeleton-price {
+  height: 20px;
+  width: 30%;
+}
+
+.skeleton-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--dark-gray);
+  margin-inline-start: -10px;
+  animation: pulse 1.5s infinite ease-in-out;
+  border: 2px solid var(--card-background);
+}
+
+.skeleton-avatar:first-child {
+  margin-inline-start: 0;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }

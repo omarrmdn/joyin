@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { TagsBar } from "@/components/TagsBar";
 import { EventCard } from "@/components/EventCard";
+import { EventCardSkeleton } from "@/components/EventCardSkeleton";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
 import { useActions } from "@/hooks/use-actions";
@@ -228,9 +229,11 @@ export default function Home() {
 
       <div className="feed-container">
         {loading ? (
-          <div className="center-content">
-            <span className="empty-text">{t.loadingEvents}</span>
-          </div>
+          <>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <EventCardSkeleton key={i} />
+            ))}
+          </>
         ) : filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <EventCard 

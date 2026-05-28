@@ -19,7 +19,8 @@ import {
   IoLinkOutline, 
   IoPeopleOutline,
   IoCashOutline,
-  IoInformationCircleOutline
+  IoInformationCircleOutline,
+  IoPencilOutline
 } from "react-icons/io5";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
@@ -360,7 +361,7 @@ export default function CreateEventPage() {
             {/* Right Column: Details & Logistics */}
             <div className="form-column column-right">
               <div className="form-group">
-                <label><IoPricetagOutline size={18} /> {t.eventTitle}</label>
+                <label><IoPencilOutline size={18} /> {t.eventTitle}</label>
                 <input 
                   type="text" 
                   placeholder={t.eventTitlePlaceholder} 
@@ -404,6 +405,9 @@ export default function CreateEventPage() {
                     />
                     {showLocationSuggestions && (locationSuggestions.length > 0 || isLocationLoading) && (
                       <div className="mobile-results-list" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--card-background)', border: '1px solid var(--border)', borderRadius: '12px', marginTop: '4px', maxHeight: '250px', overflowY: 'auto', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)' }}>
+                        <div style={{ padding: '8px 16px', fontSize: '11px', color: 'var(--secondary-text)', borderBottom: '1px solid var(--border)', textAlign: 'right' }}>
+                          Search powered by OpenStreetMap
+                        </div>
                         {isLocationLoading && (
                           <div style={{ padding: '16px', textAlign: 'center', color: 'var(--secondary-text)' }}>
                             <div className="loading-spinner-small" style={{ marginBottom: '8px' }}></div>

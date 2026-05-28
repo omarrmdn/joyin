@@ -53,40 +53,21 @@ export function Sidebar() {
               href={targetHref}
               className={`nav-item ${isActive ? "active" : ""}`}
             >
-              <Icon size={24} className="nav-item-icon" />
+              {item.href === "/profile" && user?.user_metadata?.avatar_url ? (
+                <div className="nav-item-icon" style={{
+                  width: 24, height: 24, borderRadius: "50%", overflow: "hidden", 
+                  border: isActive ? "1px solid var(--primary)" : "1px solid var(--gray)"
+                }}>
+                  <Image src={user.user_metadata.avatar_url} alt={t.profile} width={24} height={24} style={{objectFit: "cover"}} />
+                </div>
+              ) : (
+                <Icon size={24} className="nav-item-icon" />
+              )}
               <span className="nav-label">{item.label}</span>
             </Link>
           );
         })}
       </nav>
-
-      <div className="sidebar-footer">
-        {user && (
-          <Link href={localizeHref("/profile")} className="user-profile-link">
-            <div className="user-profile-container">
-              {user.user_metadata?.avatar_url ? (
-                <Image
-                  src={user.user_metadata.avatar_url}
-                  alt={t.profile}
-                  width={36}
-                  height={36}
-                  className="user-avatar"
-                />
-              ) : (
-                <div className="user-avatar-fallback">
-                  <IoPersonOutline size={18} />
-                </div>
-              )}
-              <div className="user-details">
-                <span className="user-name">
-                  {user.user_metadata?.full_name || user.email?.split("@")[0] || t.myAccount}
-                </span>
-              </div>
-            </div>
-          </Link>
-        )}
-      </div>
-
     </div>
   );
 }
