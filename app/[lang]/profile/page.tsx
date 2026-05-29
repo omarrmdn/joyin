@@ -426,6 +426,24 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {user?.email === 'omarrmdn2024@gmail.com' && (
+                  <>
+                    <div className="divider-line" />
+                    <div className="section-group">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                        <IoCheckmarkCircleOutline size={20} className="text-primary" />
+                        <h2 className="section-title" style={{ marginBottom: 0 }}>Admin Area</h2>
+                      </div>
+                      <Link 
+                        href={localizeHref("/dashboard")} 
+                        style={{ display: 'block', width: 'fit-content', padding: '10px 24px', margin: '0 auto', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}
+                      >
+                        Open Admin Dashboard
+                      </Link>
+                    </div>
+                  </>
+                )}
+
                 {user?.id && (
                   <>
                     <div className="divider-line" />

@@ -25,7 +25,9 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useActions } from "@/hooks/use-actions";
+import { checkUnpaidFees } from "@/lib/fee-utils";
 import { notifyNewAttendee } from "@/lib/notifications";
+import { useRouter } from "next/navigation";
 
 import { translateTag } from "@/lib/tag-translations";
 import { formatEventDate, formatEventTime } from "@/lib/date-utils";
@@ -37,6 +39,7 @@ interface EventDetailsProps {
 export default function EventDetailsPage({ params }: EventDetailsProps) {
   const resolvedParams = use(params);
   const eventId = resolvedParams.id;
+  const router = useRouter();
   
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -142,6 +145,15 @@ export default function EventDetailsPage({ params }: EventDetailsProps) {
     
     setIsJoining(true);
     try {
+       // Check for ban
+       const fees = await checkUnpaidFees(user.id, user.email);
+       if (fees.isBanned) {
+         alert("Your account is restricted from joining events due to unpaid fees for over 5 days. Please visit the checkout page to pay your fees.");
+         router.push(localizeHref('/checkout'));
+         setIsJoining(false);
+         return;
+       }
+
        // 1. Real Join via Attendees table
        const { error: joinError } = await supabase
          .from('attendees')

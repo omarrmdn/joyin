@@ -27,6 +27,8 @@ import { compressImage } from "@/lib/compressImage";
 import { useActions } from "@/hooks/use-actions";
 import { useToast } from "@/hooks/use-toast";
 import { Toast } from "@/components/Toast";
+import { checkUnpaidFees } from "@/lib/fee-utils";
+import Link from "next/link";
 
 type EventType = "onsite" | "online";
 type Gender = "all" | "male" | "female";
@@ -43,6 +45,21 @@ export default function CreateEventPage() {
       router.replace(`${localizeHref("/login")}?redirect=${encodeURIComponent(localizeHref("/create"))}`);
     }
   }, [user, authLoading, router, localizeHref]);
+
+  const [unpaidFees, setUnpaidFees] = useState<{hasUnpaid: boolean; totalFee: number; isBanned: boolean} | null>(null);
+
+  useEffect(() => {
+    async function fetchFees() {
+      if (user) {
+        const fees = await checkUnpaidFees(user.id, user.email);
+        if (fees.hasUnpaid && fees.totalFee > 0) {
+          setUnpaidFees(fees);
+          showToast(`You should pay +${fees.totalFee} EGP of your last event so u can create new event`, "error");
+        }
+      }
+    }
+    fetchFees();
+  }, [user]);
 
   const [tagSearch, setTagSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -324,7 +341,38 @@ export default function CreateEventPage() {
               <header className="create-header">
                 <h1>{t.createEvent}</h1>
               </header>
-              <div className="form-group">
+
+              {unpaidFees && (
+                <div style={{ padding: '16px', backgroundColor: 'var(--card-background)', border: '1px solid var(--error)', borderRadius: '12px', marginBottom: '24px' }}>
+                  <h3 style={{ color: 'var(--error)', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IoInformationCircleOutline size={24} />
+                    Payment Required
+                  </h3>
+                  <p style={{ color: 'var(--foreground)', fontSize: '15px' }}>
+                    You have unpaid fees from your previous events. You cannot create new events until the fees are paid.
+                  </p>
+                  <p style={{ color: 'var(--foreground)', fontSize: '18px', fontWeight: 'bold' }}>
+                    Total due: {unpaidFees.totalFee} EGP
+                  </p>
+                  <Link 
+                    href={localizeHref("/checkout")} 
+                    style={{ 
+                      display: 'inline-block', 
+                      marginTop: '12px', 
+                      padding: '10px 20px', 
+                      backgroundColor: 'var(--primary)', 
+                      color: '#fff', 
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Go to Checkout
+                  </Link>
+                </div>
+              )}
+
+              <div className="form-group" style={{ opacity: unpaidFees ? 0.5 : 1, pointerEvents: unpaidFees ? 'none' : 'auto' }}>
                 <div 
                   className="image-upload-box"
                   onClick={() => fileInputRef.current?.click()}
@@ -375,7 +423,7 @@ export default function CreateEventPage() {
             </div>
 
             {/* Right Column: Details & Logistics */}
-            <div className="form-column column-right">
+            <div className="form-column column-right" style={{ opacity: unpaidFees ? 0.5 : 1, pointerEvents: unpaidFees ? 'none' : 'auto' }}>
               <div className="form-group">
                 <label><IoGlobeOutline size={18} /> {t.eventType}</label>
                 <div className="type-selector">
@@ -617,7 +665,7 @@ export default function CreateEventPage() {
               )}
               <button 
                 className="publish-btn" 
-                disabled={isPublishing}
+                disabled={isPublishing || !!unpaidFees}
                 type="submit"
               >
                 {isPublishing ? t.publishing : t.publishEvent}

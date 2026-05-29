@@ -279,6 +279,7 @@ export interface Database {
           image_url: string | null
           is_online: boolean | null
           is_recurring: boolean | null
+          fee_paid: boolean | null
           latitude: number | null
           link: string | null
           location: string | null
@@ -309,6 +310,7 @@ export interface Database {
           image_url?: string | null
           is_online?: boolean | null
           is_recurring?: boolean | null
+          fee_paid?: boolean | null
           latitude?: number | null
           link?: string | null
           location?: string | null
@@ -339,6 +341,7 @@ export interface Database {
           image_url?: string | null
           is_online?: boolean | null
           is_recurring?: boolean | null
+          fee_paid?: boolean | null
           latitude?: number | null
           link?: string | null
           location?: string | null
@@ -603,6 +606,40 @@ export interface Database {
           }
         ]
       }
+      payments: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          screenshot_url: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          screenshot_url: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          screenshot_url?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       ratings: {
         Row: {
           created_at: string | null
@@ -844,6 +881,7 @@ export interface Database {
       }
       users: {
         Row: {
+          banned: boolean | null
           country_code: string | null
           created_at: string | null
           currency_auto_detected: boolean | null
@@ -860,6 +898,7 @@ export interface Database {
           total_spend: number | null
         }
         Insert: {
+          banned?: boolean | null
           country_code?: string | null
           created_at?: string | null
           currency_auto_detected?: boolean | null
@@ -876,6 +915,7 @@ export interface Database {
           total_spend?: number | null
         }
         Update: {
+          banned?: boolean | null
           country_code?: string | null
           created_at?: string | null
           currency_auto_detected?: boolean | null
