@@ -129,7 +129,7 @@ export default function SearchPage() {
   // Suggestions (random 5 events if not searched)
   const suggestions = events.slice(0, 5);
 
-  const hasActiveFilters = selectedTag !== "" || priceFilter !== "all" || priceFilter === "custom" || genderFilter !== "all" || typeFilter !== "all";
+  const hasActiveFilters = selectedTag !== "" || priceFilter !== "all" || genderFilter !== "all" || typeFilter !== "all";
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
