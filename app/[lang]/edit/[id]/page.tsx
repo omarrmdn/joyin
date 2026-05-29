@@ -25,6 +25,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
 import { useActions } from "@/hooks/use-actions";
+import { useToast } from "@/hooks/use-toast";
+import { Toast } from "@/components/Toast";
 import Link from "next/link";
 
 type EventType = "onsite" | "online";
@@ -42,6 +44,7 @@ export default function EditEventPage({ params }: EditEventPageProps) {
   const router = useRouter();
   const { t, language, localizeHref } = useLanguage();
   const { logAction } = useActions();
+  const { toast, showToast, hideToast } = useToast();
 
   // Component states
   const [isFetchingEvent, setIsFetchingEvent] = useState(true);
@@ -113,7 +116,7 @@ export default function EditEventPage({ params }: EditEventPageProps) {
           // Check if current user is indeed the organizer
           if (data.organizer_id !== user.id) {
             setIsOrganizer(false);
-            alert("You are not authorized to edit this event.");
+            showToast("You are not authorized to edit this event.", "error");
             router.replace(localizeHref("/"));
             return;
           }
@@ -142,7 +145,7 @@ export default function EditEventPage({ params }: EditEventPageProps) {
         }
       } catch (err) {
         console.error("Error fetching event for editing:", err);
-        alert("Failed to load event details.");
+        showToast("Failed to load event details.", "error");
         router.replace(localizeHref("/"));
       } finally {
         setIsFetchingEvent(false);
@@ -303,11 +306,13 @@ export default function EditEventPage({ params }: EditEventPageProps) {
         metadata: { title }
       });
 
-      alert("Event updated successfully!");
-      router.push(localizeHref(`/event/${eventId}`));
+      showToast("Event updated successfully!", "success");
+      setTimeout(() => {
+        router.push(localizeHref(`/event/${eventId}`));
+      }, 1500);
     } catch (error: any) {
       console.error("Error updating event:", error);
-      alert(`Failed to update event: ${error.message}`);
+      showToast(`Failed to update event: ${error.message}`, "error");
     } finally {
       setIsPublishing(false);
     }
@@ -341,11 +346,13 @@ export default function EditEventPage({ params }: EditEventPageProps) {
         metadata: { title }
       });
       
-      alert(t.eventDeleted || "Event deleted successfully.");
-      router.replace(localizeHref("/"));
+      showToast(t.eventDeleted || "Event deleted successfully.", "success");
+      setTimeout(() => {
+        router.replace(localizeHref("/"));
+      }, 1500);
     } catch (error: any) {
       console.error("Error deleting event:", error);
-      alert(`Failed to delete event: ${error.message}`);
+      showToast(`Failed to delete event: ${error.message}`, "error");
     } finally {
       setIsDeleting(false);
     }
@@ -459,6 +466,17 @@ export default function EditEventPage({ params }: EditEventPageProps) {
               </div>
 
               <div className="form-group">
+                <label><IoPencilOutline size={18} /> {t.eventTitle}</label>
+                <input 
+                  type="text" 
+                  placeholder={t.eventTitlePlaceholder} 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
                 <label className="section-label">{t.description}</label>
                 <textarea 
                   placeholder={t.descriptionPlaceholder} 
@@ -474,17 +492,6 @@ export default function EditEventPage({ params }: EditEventPageProps) {
 
             {/* Right Column: Details & Logistics */}
             <div className="form-column column-right">
-              <div className="form-group">
-                <label><IoPencilOutline size={18} /> {t.eventTitle}</label>
-                <input 
-                  type="text" 
-                  placeholder={t.eventTitlePlaceholder} 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-              </div>
-
               <div className="form-group">
                 <label><IoGlobeOutline size={18} /> {t.eventType}</label>
                 <div className="type-selector">
@@ -620,6 +627,20 @@ export default function EditEventPage({ params }: EditEventPageProps) {
                   />
                 </div>
               </div>
+              
+              {price && Number(price) > 0 && (
+                <div className="form-group" style={{ marginTop: '-12px', marginBottom: '16px' }}>
+                  <div style={{ padding: '12px', backgroundColor: 'var(--primary-transparent)', borderRadius: '8px', border: '1px solid var(--primary)' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <IoInformationCircleOutline size={16} color="var(--primary)" />
+                      {language === 'ar-EG' 
+                        ? `ستحصل على ${Number(price) * 0.8} جنيه لكل حاضر (رسوم Joyin هي 20٪). ${capacity ? `إجمالي الأرباح المتوقعة: ${(Number(price) * Number(capacity)) * 0.8} جنيه.` : ''}`
+                        : `You will receive ${Number(price) * 0.8} EGP per attendee (Joyin fee is 20%). ${capacity ? `Total expected revenue: ${(Number(price) * Number(capacity)) * 0.8} EGP.` : ''}`
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="form-group" ref={dropdownRef}>
                 <label><IoPricetagOutline size={18}/> {t.tags}</label>
@@ -733,6 +754,9 @@ export default function EditEventPage({ params }: EditEventPageProps) {
           </div>
         </form>
       </div>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} duration={toast.duration} onClose={hideToast} />
+      )}
     </>
   );
 }

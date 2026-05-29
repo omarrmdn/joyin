@@ -25,6 +25,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/compressImage";
 import { useActions } from "@/hooks/use-actions";
+import { useToast } from "@/hooks/use-toast";
+import { Toast } from "@/components/Toast";
 
 type EventType = "onsite" | "online";
 type Gender = "all" | "male" | "female";
@@ -34,6 +36,7 @@ export default function CreateEventPage() {
   const router = useRouter();
   const { t, language, localizeHref } = useLanguage();
   const { logAction } = useActions();
+  const { toast, showToast, hideToast } = useToast();
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -237,11 +240,13 @@ export default function CreateEventPage() {
         metadata: { title: eventData.title }
       });
 
-      alert(t.eventPublished);
-      window.location.href = localizeHref("/"); // Redirect to home
+      showToast(t.eventPublished || "Event published successfully!", "success");
+      setTimeout(() => {
+        window.location.href = localizeHref("/"); // Redirect to home
+      }, 1500);
     } catch (error: any) {
       console.error("Error publishing event:", error);
-      alert(`Failed to publish event: ${error.message}`);
+      showToast(`Failed to publish event: ${error.message}`, "error");
     } finally {
       setIsPublishing(false);
     }
@@ -344,6 +349,17 @@ export default function CreateEventPage() {
               </div>
 
               <div className="form-group">
+                <label><IoPencilOutline size={18} /> {t.eventTitle}</label>
+                <input 
+                  type="text" 
+                  placeholder={t.eventTitlePlaceholder} 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
                 <label className="section-label">{t.description}</label>
                 <textarea 
                   placeholder={t.descriptionPlaceholder} 
@@ -360,17 +376,6 @@ export default function CreateEventPage() {
 
             {/* Right Column: Details & Logistics */}
             <div className="form-column column-right">
-              <div className="form-group">
-                <label><IoPencilOutline size={18} /> {t.eventTitle}</label>
-                <input 
-                  type="text" 
-                  placeholder={t.eventTitlePlaceholder} 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-              </div>
-
               <div className="form-group">
                 <label><IoGlobeOutline size={18} /> {t.eventType}</label>
                 <div className="type-selector">
@@ -506,6 +511,19 @@ export default function CreateEventPage() {
                 />
               </div>
             </div>
+            {price && Number(price) > 0 && (
+              <div className="form-group" style={{ marginTop: '-12px', marginBottom: '16px' }}>
+                <div style={{ padding: '12px', backgroundColor: 'var(--primary-transparent)', borderRadius: '8px', border: '1px solid var(--primary)' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IoInformationCircleOutline size={16} color="var(--primary)" />
+                    {language === 'ar-EG' 
+                      ? `ستحصل على ${Number(price) * 0.8} جنيه لكل حاضر (رسوم Joyin هي 20٪). ${capacity ? `إجمالي الأرباح المتوقعة: ${(Number(price) * Number(capacity)) * 0.8} جنيه.` : ''}`
+                      : `You will receive ${Number(price) * 0.8} EGP per attendee (Joyin fee is 20%). ${capacity ? `Total expected revenue: ${(Number(price) * Number(capacity)) * 0.8} EGP.` : ''}`
+                    }
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="form-group" ref={dropdownRef}>
               <label><IoPricetagOutline size={18}/> {t.tags}</label>
@@ -608,6 +626,9 @@ export default function CreateEventPage() {
           </div>
         </form>
       </div>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} duration={toast.duration} onClose={hideToast} />
+      )}
     </>
   );
 }
