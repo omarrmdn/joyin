@@ -51,7 +51,7 @@ export async function checkUnpaidFees(userId: string, email?: string | null) {
     // Actually, "user can't generate any events until he pays previous unpaid event's fee."
     // If fee is 0 because no one attended, they shouldn't be blocked.
     // If we calculate fee based on attendees, then it makes sense.
-    const fee = (event.price * attendeesCount) * 0.2;
+    const fee = ((event.price || 0) * attendeesCount) * 0.2;
     totalFee += fee;
   }
 
