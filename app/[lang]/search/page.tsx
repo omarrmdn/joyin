@@ -129,6 +129,8 @@ export default function SearchPage() {
   // Suggestions (random 5 events if not searched)
   const suggestions = events.slice(0, 5);
 
+  const hasActiveFilters = selectedTag !== "" || priceFilter !== "all" || priceFilter === "custom" || genderFilter !== "all" || typeFilter !== "all";
+
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
       setHasSearched(true);
@@ -252,17 +254,17 @@ export default function SearchPage() {
       )}
 
       {/* Results / Suggestions */}
-      <div className="search-page-results feed-container">
+      <div className="search-page-results">
         {loading ? (
-          <div className="search-results-list">
+          <div className="feed-container" style={{ padding: 0 }}>
             {Array.from({ length: 4 }).map((_, i) => (
               <EventCardSkeleton key={i} />
             ))}
           </div>
-        ) : !hasSearched || !searchQuery.trim() ? (
+        ) : (!hasSearched && !searchQuery.trim() && !hasActiveFilters) ? (
           <div className="suggestions-state">
             <h3 className="suggestions-title">{language === 'ar-EG' ? 'مقترحات لك' : 'Suggestions for you'}</h3>
-            <div className="search-results-list">
+            <div className="feed-container" style={{ padding: 0 }}>
               {suggestions.map((event) => (
                 <EventCard 
                   key={event.id} 
@@ -281,27 +283,29 @@ export default function SearchPage() {
             </div>
           </div>
         ) : filteredEvents.length > 0 ? (
-          <div className="search-results-list">
+          <>
             <p className="search-results-count">
               {filteredEvents.length}{" "}
               {language === "ar-EG" ? "نتيجة" : filteredEvents.length === 1 ? "result" : "results"}
             </p>
-            {filteredEvents.map((event) => (
-              <EventCard 
-                key={event.id} 
-                id={event.id}
-                title={event.title}
-                image={event.image_url || event.image}
-                location={event.location}
-                date={event.date}
-                endDate={event.end_date}
-                price={event.price === 0 ? t.free : event.price}
-                attendingCount={event.attendees_count || 0}
-                attendingAvatars={event.attending_avatars || []}
-                isOnline={event.is_online}
-              />
-            ))}
-          </div>
+            <div className="feed-container" style={{ padding: 0 }}>
+              {filteredEvents.map((event) => (
+                <EventCard 
+                  key={event.id} 
+                  id={event.id}
+                  title={event.title}
+                  image={event.image_url || event.image}
+                  location={event.location}
+                  date={event.date}
+                  endDate={event.end_date}
+                  price={event.price === 0 ? t.free : event.price}
+                  attendingCount={event.attendees_count || 0}
+                  attendingAvatars={event.attending_avatars || []}
+                  isOnline={event.is_online}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div className="search-empty-state">
             <div className="search-empty-icon-wrapper">
@@ -312,8 +316,8 @@ export default function SearchPage() {
             </p>
             <p className="search-empty-subtitle">
               {language === "ar-EG"
-                ? `مفيش نتائج لـ "${searchQuery}"`
-                : `No results for "${searchQuery}"`}
+                ? (hasActiveFilters && !searchQuery.trim() ? "لا توجد فعاليات تطابق الفلاتر المحددة" : `مفيش نتائج لـ "${searchQuery}"`)
+                : (hasActiveFilters && !searchQuery.trim() ? "No events match the selected filters" : `No results for "${searchQuery}"`)}
             </p>
           </div>
         )}
