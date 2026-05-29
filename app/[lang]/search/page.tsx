@@ -62,7 +62,16 @@ export default function SearchPage() {
           .order("date", { ascending: true });
 
         if (eventsData) {
-          const mappedEvents = eventsData.map((event) => ({
+          const now = new Date();
+          const mappedEvents = eventsData
+            .filter((event) => {
+              if (event.status === 'canceled') return false;
+              const eventEnd = event.end_date 
+                ? new Date(`${event.end_date}T${event.end_time || '23:59:59'}`) 
+                : new Date(`${event.date}T${event.time || '23:59:59'}`);
+              return eventEnd >= now;
+            })
+            .map((event) => ({
             ...event,
             tags:
               event.event_tags
@@ -666,8 +675,6 @@ export default function SearchPage() {
           }
           .search-page-results {
             padding: 24px 40px;
-            max-width: 800px;
-            margin: 0 auto;
           }
           .search-page-input-wrapper {
             max-width: 600px;
