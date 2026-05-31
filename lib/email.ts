@@ -18,7 +18,7 @@ export async function sendEventCanceledEmail(
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
-      reply_to: "joyin.app@outlook.com",
+      replyTo: "joyin.app@outlook.com",
       subject: "Event Canceled",
       html: `<p>Hello,</p><p>We wanted to let you know that the event <strong>"${eventTitle}"</strong> has been canceled by the organizer.</p><p>Thank you,<br/>The Joyin Team</p>`,
     });
@@ -48,7 +48,7 @@ export async function sendSupportMessageEmail(
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
-      reply_to: "joyin.app@outlook.com",
+      replyTo: "joyin.app@outlook.com",
       subject: `Joyin Support: ${title}`,
       html: `<p>Hello,</p><p>${message}</p><p>Thank you,<br/>The Joyin Team</p>`,
     });
@@ -74,7 +74,7 @@ export async function sendFeeWarningEmail(toEmail: string, feeAmount: number) {
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
-      reply_to: "joyin.app@outlook.com",
+      replyTo: "joyin.app@outlook.com",
       subject: "Warning: Unpaid Fees for Past Events",
       html: `<p>Hello,</p><p>You have unpaid fees of <strong>${feeAmount} EGP</strong> from your previously organized events.</p><p>Please settle these fees as soon as possible to avoid account restrictions.</p><p>Thank you,<br/>The Joyin Team</p>`,
     });
@@ -100,7 +100,7 @@ export async function sendBannedEmail(toEmail: string) {
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
-      reply_to: "joyin.app@outlook.com",
+      replyTo: "joyin.app@outlook.com",
       subject: "Account Restricted due to Unpaid Fees",
       html: `<p>Hello,</p><p>Your account has been restricted from joining or creating events because your unpaid fees have been overdue for more than 5 days.</p><p>You can currently only browse events. Please pay your outstanding fees via the checkout page to restore your full account privileges.</p><p>Thank you,<br/>The Joyin Team</p>`,
     });
