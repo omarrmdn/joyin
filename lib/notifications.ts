@@ -12,8 +12,10 @@ export async function createNotification(
   data?: Record<string, any>
 ): Promise<{ success: boolean; notificationId?: string; error?: string }> {
   try {
-    // Idempotency: skip if an identical notification was created in the last 30 seconds
-    const thirtySecondsAgo = new Date(Date.now() - 30000).toISOString();
+    // Idempotency: skip if an identical notification was created recently
+    // For warnings/bans (type="message"), use 24 hours to prevent spam. Otherwise, 30 seconds.
+    const windowMs = type === "message" ? 24 * 60 * 60 * 1000 : 30000;
+    const timeWindow = new Date(Date.now() - windowMs).toISOString();
     const { data: existing } = await supabase
       .from("notifications")
       .select("id")
@@ -21,7 +23,7 @@ export async function createNotification(
       .eq("type", type)
       .eq("title", title)
       .eq("body", body)
-      .gt("created_at", thirtySecondsAgo)
+      .gt("created_at", timeWindow)
       .maybeSingle();
 
     if (existing) {
@@ -127,4 +129,91 @@ export async function notifyAttendeeCancellation(
     console.error("[notifyAttendeeCancellation] Error:", error);
     return { success: false, error: error.message };
   }
+}
+
+/**
+ * Notify the user that they have successfully published a new event.
+ */
+export async function notifyEventPublished(
+  userId: string,
+  eventId: string,
+  eventTitle: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await createNotification(
+    userId,
+    "new_event",
+    "Event Published Successfully",
+    `Your event "${eventTitle}" has been published.`,
+    { event_id: eventId, event_title: eventTitle }
+  );
+  return { success: result.success, error: result.error };
+}
+
+/**
+ * Notify attendees that an event they joined has been canceled.
+ */
+export async function notifyEventCanceled(
+  attendeeId: string,
+  eventId: string,
+  eventTitle: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await createNotification(
+    attendeeId,
+    "event_canceled",
+    "Event Canceled",
+    `The event "${eventTitle}" has been canceled by the organizer.`,
+    { event_id: eventId, event_title: eventTitle }
+  );
+  return { success: result.success, error: result.error };
+}
+
+/**
+ * Notify user from support / warnings.
+ */
+export async function notifySupportMessage(
+  userId: string,
+  title: string,
+  message: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await createNotification(
+    userId,
+    "message",
+    title,
+    message,
+    {}
+  );
+  return { success: result.success, error: result.error };
+}
+
+/**
+ * Notify user that they have an unpaid fee for a past organized event (Warning).
+ */
+export async function notifyFeeWarning(
+  userId: string,
+  feeAmount: number
+): Promise<{ success: boolean; error?: string }> {
+  const result = await createNotification(
+    userId,
+    "message",
+    "Unpaid Fees Warning",
+    `You have unpaid fees of ${feeAmount} EGP for your past events. Please pay them to continue organizing events.`,
+    { fee_amount: feeAmount }
+  );
+  return { success: result.success, error: result.error };
+}
+
+/**
+ * Notify user that they got banned because of unpaid fees (only browse).
+ */
+export async function notifyBanned(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await createNotification(
+    userId,
+    "message",
+    "Account Restricted",
+    "Your account is restricted from joining or creating events due to unpaid fees. You can only browse events.",
+    {}
+  );
+  return { success: result.success, error: result.error };
 }

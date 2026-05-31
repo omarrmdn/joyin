@@ -325,6 +325,17 @@ export default function EditEventPage({ params }: EditEventPageProps) {
     
     setIsDeleting(true);
     try {
+      // Fetch attendees before deleting so we can notify them
+      const { data: attendees } = await supabase
+        .from('attendees')
+        .select(`
+          user_id,
+          users:user_id (
+            email
+          )
+        `)
+        .eq('event_id', eventId);
+
       // Supabase should cascade delete event_tags and other relations if configured,
       // but let's delete event_tags first just in case to avoid foreign key errors.
       await supabase
@@ -339,6 +350,19 @@ export default function EditEventPage({ params }: EditEventPageProps) {
         
       if (error) throw error;
       
+      // Notify attendees that the event was canceled (App & Email)
+      if (attendees && attendees.length > 0) {
+        const { notifyEventCanceled } = await import('@/lib/notifications');
+        const { sendEventCanceledEmail } = await import('@/lib/email');
+        
+        await Promise.all(attendees.map(async (a: any) => {
+          await notifyEventCanceled(a.user_id, eventId, title);
+          if (a.users?.email) {
+            await sendEventCanceledEmail(a.users.email, title);
+          }
+        }));
+      }
+
       await logAction({
         action_type: 'delete_event',
         entity_type: 'event',

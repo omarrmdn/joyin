@@ -55,6 +55,20 @@ export async function checkUnpaidFees(userId: string, email?: string | null) {
     totalFee += fee;
   }
 
+  // Trigger notifications
+  if (totalFee > 0) {
+    const { notifyFeeWarning, notifyBanned } = await import("@/lib/notifications");
+    const { sendFeeWarningEmail, sendBannedEmail } = await import("@/lib/email");
+    
+    if (isBanned) {
+      await notifyBanned(userId);
+      if (email) await sendBannedEmail(email);
+    } else {
+      await notifyFeeWarning(userId, totalFee);
+      if (email) await sendFeeWarningEmail(email, totalFee);
+    }
+  }
+
   return { 
     hasUnpaid: unpaidEvents.length > 0, 
     totalFee, 

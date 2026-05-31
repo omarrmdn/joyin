@@ -225,6 +225,21 @@ export function useMessages() {
 
             if (sendError) throw sendError;
 
+            // Trigger notification
+            if (message.recipient_id) {
+                // We use dynamic import to avoid circular dependencies in hooks, 
+                // or just call the utility directly if we import it.
+                // Let's import it at the top or just fetch it here.
+                const { createNotification } = await import('@/lib/notifications');
+                await createNotification(
+                    message.recipient_id,
+                    "message",
+                    "New Message",
+                    `You have a new message from ${user.user_metadata?.full_name || 'someone'}.`,
+                    { message_id: data.id }
+                );
+            }
+
             setMessages(prev => {
                 const newData = {
                     ...data,

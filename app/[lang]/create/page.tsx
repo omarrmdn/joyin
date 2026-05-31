@@ -257,6 +257,9 @@ export default function CreateEventPage() {
         metadata: { title: eventData.title }
       });
 
+      const { notifyEventPublished } = await import('@/lib/notifications');
+      await notifyEventPublished(user.id, eventData.id, eventData.title);
+
       showToast(t.eventPublished || "Event published successfully!", "success");
       setTimeout(() => {
         window.location.href = localizeHref("/"); // Redirect to home
